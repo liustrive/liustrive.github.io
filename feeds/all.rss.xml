@@ -1,14 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>古董Leon</title><link>http://www.liustrive.com/</link><description></description><atom:link href="http://www.liustrive.com/feeds/all.rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 15 Apr 2014 00:00:00 +0800</lastBuildDate><item><title>About</title><link>http://www.liustrive.com/about.html</link><description>&lt;h2&gt;About&lt;/h2&gt;
-&lt;p&gt;Hello，我是Leon，这是我的博客空间，用以记些零零碎碎。&lt;/p&gt;
-&lt;p&gt;关于博客平台选择，对Wordpress的臃肿严重无爱，CSDN之流又显嘈杂，喜欢简单有效的东西，基于Python的Pelican似乎符合期望，足够的自由度，极简的风格，that's more like it.&lt;/p&gt;
-&lt;h3&gt;关于我&lt;/h3&gt;
-&lt;p&gt;我是Liu Lian，本科来自浙江大学计算机系，后保送至上海交大计算机系攻读硕士，被科研好生蹂躏，同时也磨练了耐性和求索的精神，失之东隅，姑且收之桑榆。&lt;/p&gt;
-&lt;p&gt;一个熟练的C/C++开发者，喜欢高效的、优美的代码，热爱C/C++，喜欢Java/Python，Github/StackOverflow拥趸，爱好各种展现创造力的新事物、新技术。&lt;/p&gt;
-&lt;p&gt;Hadoop生态圈研究学习者，着力研读Hadoop1.2.0代码、Yarn架构，WFScheduler贡献人，对Oozie工作流引擎执行个人优化定制，分布式计算领域一叶执着向前的扁舟。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Passion. Fully charged 24/7. Always believe in yourself.&lt;/strong&gt;&lt;/p&gt;
-&lt;h3&gt;Contact me&lt;/h3&gt;
-&lt;p&gt;&lt;a href="https://www.facebook.com/liustrive"&gt;Facebook&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href="http://weibo.com/LiuLianZJU2SJTU"&gt;Weibo&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Email: &lt;a href="mailto:liustrive@gmail.com"&gt;liustrive@gmail.com&lt;/a&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Leon</dc:creator><pubDate>Tue, 15 Apr 2014 00:00:00 +0800</pubDate><guid>tag:www.liustrive.com,2014-04-15:about.html</guid></item><item><title>Hello World</title><link>http://www.liustrive.com/hello.html</link><description>&lt;h2&gt;Hello World&lt;/h2&gt;
-&lt;p&gt;开个博客，想想还是用 Hello 镇宅&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Leon</dc:creator><pubDate>Mon, 14 Apr 2014 19:15:00 +0800</pubDate><guid>tag:www.liustrive.com,2014-04-14:hello.html</guid><category>Hello</category></item></channel></rss>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>古董Leon</title><link>http://www.liustrive.com/</link><description></description><atom:link href="http://www.liustrive.com/feeds/all.rss.xml" rel="self"></atom:link><lastBuildDate>Mon, 14 Apr 2014 19:15:00 +0800</lastBuildDate><item><title>Hello World</title><link>http://www.liustrive.com/pages/2014/04/14/hello.html</link><description>&lt;h2&gt;Hello World&lt;/h2&gt;
+&lt;p&gt;开个博客，想想还是用 Hello 镇宅&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Leon</dc:creator><pubDate>Mon, 14 Apr 2014 19:15:00 +0800</pubDate><guid>tag:www.liustrive.com,2014-04-14:pages/2014/04/14/hello.html</guid><category>Hello</category></item></channel></rss>
