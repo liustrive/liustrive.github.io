@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>古董Leon</title><link href="http://www.liustrive.com/" rel="alternate"></link><link href="http://www.liustrive.com/feeds%5Clife.atom.xml" rel="self"></link><id>http://www.liustrive.com/</id><updated>2013-03-14T19:15:00+08:00</updated><entry><title>Hello World</title><link href="http://www.liustrive.com/pages/2013/03/14/hello.html" rel="alternate"></link><updated>2013-03-14T19:15:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2013-03-14:pages/2013/03/14/hello.html</id><summary type="html">&lt;h2&gt;Hello World&lt;/h2&gt;
+&lt;p&gt;开个博客，想想还是用 Hello 镇宅&lt;/p&gt;</summary><category term="Hello"></category></entry></feed>

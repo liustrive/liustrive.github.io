@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="http://www.liustrive.com/theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="http://www.liustrive.com/theme/bootstrap.min.css" rel="stylesheet">
-    <link href="http://www.liustrive.com/theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="http://www.liustrive.com/theme/local.css" rel="stylesheet">
-    <link href="http://www.liustrive.com/theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,12 +32,12 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href="http://www.liustrive.com">古董Leon</a>
+        <a class="brand" href="../../../..">古董Leon</a>
 
         <div class="nav-collapse">
         <ul class="nav">
             
-            <li><a href="http://www.liustrive.com/pages/about.html">About</a></li>
+            <li><a href="../../../../pages/about.html">About</a></li>
         </ul>
         </div>
         
@@ -55,7 +55,7 @@
             <h1>Corona 笔记</h1>
 2013-05-12
 
-by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
+by <a class="url fn" href="../../../../author/leon.html">Leon</a>
  
 
 
@@ -64,8 +64,8 @@ by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
         <div><h3>Corona 初探</h3>
 <p>本周关注了一下另一种号称下一代MapReduce的框架：<strong>Corona</strong>。它是facebook的开源框架，代码在：</p>
 <p><a href="https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona">https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona</a> </p>
-<p>Cornna的设计需求与Apache的YARN框架十分相似，它的发布文档：
-“<a href="http://www.jorditorres.org/wp-content/uploads/2012/11/CC-MEI-Corona-AntonioRodriguez.pdf">Under the Hood: Scheduling MapReduce jobs more efficiently with Corona</a>”</p>
+<p>Cornna的设计需求与Apache的YARN框架十分相似，它的发布文档：</p>
+<p>“<a href="http://www.jorditorres.org/wp-content/uploads/2012/11/CC-MEI-Corona-AntonioRodriguez.pdf">Under the Hood: Scheduling MapReduce jobs more efficiently with Corona</a>”</p>
 <p>其中提到，当前Map-Reduce所使用的single Job Tracker在Facebook的运行环境下已经遇到瓶颈，在Hadoop Corona中，集群的资源是由central Cluster Manager统一分配调度，每个job拥有各自单独的Corona Job Tracker，这些与YARN框架的设计思路非常相近，解决了Map-Reduce中存在的扩展性、单点故障等不足。</p>
 <p>相比于YARN，Corona似乎更贴近Map-Reduce的原版，其代码在原版Map-Reduce基础上修改而来，似乎更贴近原有Map-Reduce的用户；另一大优势在于Corona所采用的Push-based通信机制，在原版Map-Reduce和YARN中，采用轮询方式使client获取信息，比如心跳机制，当规模过大后，会产生一定延迟，而Corona采用Push-based通信机制，server直接把信息推送至client，为实现这一通信机制，Corona似乎采用了更多的通信协议（待考证）。</p>
 <p>Corona相比与Yarn的缺点也是由于它更贴近原版所产生，比如Corona不能提供Yarn的用户设置所需内存、CPU等特性；任务调度中仍采用slot作为资源分配元，资源利用率不如Yarn；Corona也不支持Yarn那种灵活的多计算框架支持，因为它的TaskTracker还是执行Map和Reduce task。
@@ -149,8 +149,8 @@ by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
                 Site
                 </li>
             
-                <li><a href="http://www.liustrive.com/">Archives</a>
-                <li><a href="http://www.liustrive.com/tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <li><a href="http://www.liustrive.com/" rel="alternate">Atom feed</a></li>
                 <li><a href="http://www.liustrive.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
             </ul>
@@ -163,8 +163,8 @@ by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
                 Categories
                 </li>
                 
-                <li><a href="http://www.liustrive.com/category/life.html">life</a></li>
-                <li><a href="http://www.liustrive.com/category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -189,7 +189,7 @@ by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href="http://www.liustrive.com">古董Leon</a> &copy; Leon 2012</p>
+<p><a href="../../../..">古董Leon</a> &copy; Leon 2012</p>
 </footer>
 
 </div> <!-- /container -->
