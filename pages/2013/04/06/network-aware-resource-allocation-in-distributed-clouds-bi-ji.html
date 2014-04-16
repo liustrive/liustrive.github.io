@@ -50,7 +50,63 @@
     <div class="row">
 
         <div class="span9">
-    <h1>Authors on 古董Leon</h1>        <li><a href="http://www.liustrive.com/author/leon.html">Leon</a> (4)</li>
+    <div class='article'>
+        <div class="content-title">
+            <h1>Network Aware Resource Allocation in Distributed Clouds 笔记</h1>
+2013-04-06
+
+by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
+ 
+
+
+        </div>
+	
+        <div><p>INFOCOM 2012 </p>
+<p>Mansoor Alicherry, T.V. Lakshman</p>
+<p>Bell Labs. </p>
+<p>这篇文章主要介绍了通讯负载和延迟最小化的高效的resource allocation算法。</p>
+<p>Key contribution：</p>
+<ol>
+<li>Develop an efficient 2-approximation algorithm for the optimal selection of data centers in the distributed cloud.</li>
+<li>Use of an optimal algorithm for rack and server selection.</li>
+<li>develop a heuristic for partitioning the requested resources for the task amongst the chosen data centers and racks.</li>
+</ol>
+<p>分布式资源调配系统结构：
+<img alt="Network Aware Resource Allocation Architecture" src="http://i.imgur.com/FnsGybs.png" /></p>
+<p>优化的主要目标是减少datacenter之间的traffic，降低communication cost。
+Cloud Automation的四个步骤：</p>
+<ol>
+<li>Datacenter selection</li>
+<li>Request partitioning across datacenters</li>
+<li>Rack, blade and processor selection</li>
+<li>VM placement</li>
+</ol>
+<p>文章主要集中于Datacenter selection，即响应用户请求的第一步：找到合适的若干个datacenter来放置合适数量的VM。</p>
+<p>文章提出了近似算法，其主要目标是通过最小路径找到合适的datacenter，并且通过相VM相互间的通讯延迟，避免存在一些性能会严重拉低整体表现的VM。并且算法提供额外的用户约束，如某datacenter中最大、最小VM数量等。</p>
+<p>文章将datacenter选择问题抽象成了一个完全图G = （V,E,w,e）的子图选择问题，即：从完全图中找出一个最长edge最小的子图的问题，称为MINDIAMETER问题。</p>
+<p>需要注意的是这里提出的抽象是针对另一个文章里的MAXCLIQUE 问题改进简化而来，MAXCLIQUE问题是寻找最大clique问题，文中给出的例子如下：
+<img alt="Reduction" src="http://i.imgur.com/UU0YP2G.png" /> </p>
+<p>如图中所示，edge上的数字代表link costs，虚线是补全的edge使图成完全图，加粗的线的子图是MINDIAMETER问题的解，这在原图中也满足最大clique。
+随后文章提出了近似算法，算法得到最近似的解，该解得到的子图的diameter最多是最优子图的diameter的二倍。</p>
+<p>文章的基础文：<a href="http://dl.acm.org/citation.cfm?id=574848">Computers and Intractability; A Guide to the Theory of NP-Completeness</a>，即MAXCLIQUE问题的来源。</p>
+<p>这篇文章提出了考虑网络状况的资源分配算法，其使用的策略跟之前组会提出的相近，划分出一片相互之间延迟最小的子网，把运行任务的VM放在这个子网里。文章提出的近似算法如果能再进一步优化肯定是另一篇A类paper了，涉及的数学和图论功底可能不是我能掌握。但是我觉得如果能想办法结合CPU和内存来放进edge的weight里一起算，应该会得到更好的结果。</p></div>
+	
+        <hr>
+
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'liustrive'; 
+    var disqus_title = 'Network Aware Resource Allocation in Distributed Clouds 笔记';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
         </div>
         
         <div class="span3">

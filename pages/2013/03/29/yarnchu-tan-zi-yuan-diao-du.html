@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>古董Leon</title>
+    <meta name="description" content="">
+    <meta name="author" content="Leon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="http://www.liustrive.com/theme/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="http://www.liustrive.com/theme/bootstrap.min.css" rel="stylesheet">
+    <link href="http://www.liustrive.com/theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="http://www.liustrive.com/theme/local.css" rel="stylesheet">
+    <link href="http://www.liustrive.com/theme/pygments.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="navbar-inner">
+    <div class="container">
+
+         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+         </a>
+
+        <a class="brand" href="http://www.liustrive.com">古董Leon</a>
+
+        <div class="nav-collapse">
+        <ul class="nav">
+            
+            <li><a href="http://www.liustrive.com/pages/about.html">About</a></li>
+        </ul>
+        </div>
+        
+    </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+    <div class="row">
+
+        <div class="span9">
+    <div class='article'>
+        <div class="content-title">
+            <h1>Yarn初探（一）资源调度</h1>
+2013-03-29
+
+by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
+ 
+
+
+        </div>
+	
+        <div><h3>资源调度器</h3>
+<p><img alt="" src="http://i.imgur.com/1pY6g1v.jpg" />
+YARN的资源管理器本质上像一个事件处理器，需要处理6种SchedulerEvent类型的事件：</p>
+<ul>
+<li><strong>NODE_REMOVED</strong>：表示集群中被移除一个计算节点，资源调度器收到该事件时需要从可分配资源总量中移除相应的资源量。</li>
+<li><strong>NODE_ADDED</strong>：表示集群中增加了一个计算节点，资源调度器收到该事件时需要将新增的资源量添加到可分配资源总量中。</li>
+<li><strong>APPLICATION_ADDED</strong>：表示ResourceManager收到一个新的Application。资源管理器需将该Application添加到相应的数据结构中。通常，资源管理器需要为每个application维护一个独立的数据结构，以便于统一管理和资源分配。</li>
+<li><strong>APPLICATION_REMOVED</strong>：事件APPLICATION_REMOVED表示一个Application运行结束，资源管理器需将该Application从相应的数据结构中清除。</li>
+<li><strong>CONTAINER_EXPIRED</strong>：当资源调度器将一个container分配给某个ApplicationMaster后，如果该ApplicationMaster在一定时间间隔内没有使用该container，则资源调度器会对该container进行再分配。</li>
+<li><strong>NODE_UPDATE</strong>：NodeManager通过心跳机制向ResourceManager汇报各个container运行情况，会触发一个NODE_UDDATE事件。</li>
+</ul>
+<p>其中，NODE_UPDATE事件发生时表示可能有新的container得到释放，因此该事件会触发资源分配，该事件是6个事件中最重要的事件，它会触发资源调度器最核心的资源分配机制。</p>
+<h3>资源管理与分配</h3>
+<p>相比于MapReduce v1中的资源调度器，YARN采用了事件驱动的模型，因此编写起来更加复杂。同MapReduce v1一样，YARN也自带了三种常用的调度器，分别是FIFO，Capacity Scheduler和Fair Scheduler，其中，第一个是默认的调度器，它属于批处理调度器，而后两个属于多租户调度器，采用树形多队列的形式组织资源。</p>
+<p>YARN的资源表示模型目前只支持CPU和内存的管理与分配，NodeManager启动时，会向ResourceManager注册，而注册信息中会包含该节点可分配的CPU和内存总量，YARN为了更细化的分配CPU资源，将物理CPU划分为多个虚拟CPU，用户提交应用程序时，可以指定每个任务需要的虚拟CPU个数。而对内存资源，YARN采用进程监控的方式控制内存，每个NodeManager会启动一个额外监控线程监控每个container内存资源使用量，一旦发现它超过约定的资源量，则会将其杀死。</p>
+<p>YARN的资源分配模型是以队列的形式组织的，每个用户可属于一个或多个队列，且只能向这些队列中提交application。每个队列被划分了一定比例的资源。而资源分配过程是异步的，资源调度器将资源分配给一个application后，不会立刻push给对应的ApplicaitonMaster，而是暂时放到一个缓冲区中，等待ApplicationMaster通过周期性的RPC函数主动来取，即采用了pull-based模型，而不是push-based模型。</p>
+<h3>有关ApplictionMaster</h3>
+<p>ApplicationManager的三大模块：</p>
+<ul>
+<li>
+<p><strong>AMLivelinessMonitor</strong>：周期性遍历所有ApplicationMaster，如果一个ApplicationMaster在一定时间内未汇报心跳信息，则认为它死掉了，它上面所有正在运行的Container将被置为运行失败，AM本身会被重新分配到另外一个节点上执行。</p>
+<p>对于运行失败的Container, RM不会重新执行，它只会通过心跳机制告诉对应的AM，由AM决定是否重新执行，如果需要，则AM重新向RM申请资源。
+- <strong>ApplicationMasterLauncher</strong>：处理AMLauncherEvent类型的事件，该类型事件有两种，分别是请求启动一个AM的“LAUNCH”和请求清理一个AM的“CLEANUP”。ApplicationMasterLauncher维护了一个线程池，从而能够尽快地处理这两种事件：
+- 收到了“LAUNCH”类型的事件，它会与对应的NodeManager通信，要求它启动ApplicationMaster。具体步骤如下：
+    1. 创建一个ContainerManager协议的Client；
+    2. 向对应的NodeManager发起连接请求；
+    3. 启动AM所需的各种信息，并封装成一个StartContainerRequest对象；
+    4. 通过RPC函数ContainerManager. startContainer()发送给对应的NM。
+- 收到了“CLEANUP”类型的事件，它会与对应的NodeManager通信，要求它杀死ApplicationMaster。整个过程与启动AM的过程类似。</p>
+</li>
+<li>
+<p><strong>ApplicationMasterService</strong>：处理来自ApplicationMaster的请求：</p>
+<ul>
+<li>注册</li>
+<li>心跳</li>
+<li>清理</li>
+</ul>
+<p>其中，注册是ApplicationMaster启动时发生的行为，请求包中包含AM所在节点，RPC端口号和tracking URL等信息；心跳是周期性行为，包含请求资源的类型描述、待释放的Container列表等，而AMS则为之返回新分配的Container、失败的Container等信息；清理是应用程序运行结束时发生的行为，ApplicationMaster向RM发送清理应用程序的请求，以回收资源和清理各种数据结构。</p>
+</li>
+</ul></div>
+	
+        <hr>
+
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'liustrive'; 
+    var disqus_title = 'Yarn初探（一）资源调度';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+        </div>
+        
+        <div class="span3">
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Site
+                </li>
+            
+                <li><a href="http://www.liustrive.com/">Archives</a>
+                <li><a href="http://www.liustrive.com/tags.html">Tags</a>
+                <li><a href="http://www.liustrive.com/" rel="alternate">Atom feed</a></li>
+                <li><a href="http://www.liustrive.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Categories
+                </li>
+                
+                <li><a href="http://www.liustrive.com/category/life.html">life</a></li>
+                <li><a href="http://www.liustrive.com/category/tech.html">Tech</a></li>
+                   
+            </ul>
+            </div>
+
+
+
+
+            <div class="social">
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Social
+                </li>
+           
+                <li><a href="http://weibo.com/LiuLianZJU2SJTU">微博</a></li>
+                <li><a href="https://www.facebook.com/liustrive">Facebook</a></li>
+            </ul>
+            </div>
+            </div>
+
+        </div>  
+    </div>     </div> 
+<footer>
+<br />
+<p><a href="http://www.liustrive.com">古董Leon</a> &copy; Leon 2012</p>
+</footer>
+
+</div> <!-- /container -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
+<script>var _gaq=[['_setAccount','UA-50000386-1'],['_trackPageview']];(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s)}(document,'script'))</script>
+<a href="https://github.com/liustrive"><img style="position: absolute; top: 40px; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png" alt="Fork me on GitHub" /></a>
+ 
+</body>
+</html>

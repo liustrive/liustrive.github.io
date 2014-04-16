@@ -57,8 +57,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="http://www.liustrive.com/pages/2014/04/14/hello.html"><h1>Hello World</h1></a>
-2014-04-14
+            <a href="http://www.liustrive.com/pages/2013/05/12/corona-bi-ji.html"><h1>Corona 笔记</h1></a>
+2013-05-12
 
 by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
  
@@ -67,11 +67,147 @@ by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
  
         </div>
         
-        <div><h2>Hello World</h2>
-<p>开个博客，想想还是用 Hello 镇宅</p></div>
+        <div><h3>Corona 初探</h3>
+<p>本周关注了一下另一种号称下一代MapReduce的框架：<strong>Corona</strong>。它是facebook的开源框架，代码在：</p>
+<p><a href="https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona">https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona</a> </p>
+<p>Cornna的设计需求与Apache的YARN框架十分相似，它的发布文档：
+“<a href="http://www.jorditorres.org/wp-content/uploads/2012/11/CC-MEI-Corona-AntonioRodriguez.pdf">Under the Hood: Scheduling MapReduce jobs more efficiently with Corona</a>”</p>
+<p>其中提到，当前Map-Reduce所使用的single Job Tracker在Facebook的运行环境下已经遇到瓶颈，在Hadoop Corona中，集群的资源是由central Cluster Manager统一分配调度，每个job拥有各自单独的Corona Job Tracker，这些与YARN框架的设计思路非常相近，解决了Map-Reduce中存在的扩展性、单点故障等不足。</p>
+<p>相比于YARN，Corona似乎更贴近Map-Reduce的原版，其代码在原版Map-Reduce基础上修改而来，似乎更贴近原有Map-Reduce的用户；另一大优势在于Corona所采用的Push-based通信机制，在原版Map-Reduce和YARN中，采用轮询方式使client获取信息，比如心跳机制，当规模过大后，会产生一定延迟，而Corona采用Push-based通信机制，server直接把信息推送至client，为实现这一通信机制，Corona似乎采用了更多的通信协议（待考证）。</p>
+<p>Corona相比与Yarn的缺点也是由于它更贴近原版所产生，比如Corona不能提供Yarn的用户设置所需内存、CPU等特性；任务调度中仍采用slot作为资源分配元，资源利用率不如Yarn；Corona也不支持Yarn那种灵活的多计算框架支持，因为它的TaskTracker还是执行Map和Reduce task。
+总的来说，Corona更像是对原版Map-Reduce的升级，从代码量上也可见一斑，Yarn的<a href="http://www.fightrice.com/mirrors/apache//hadoop/core/">代码</a> 十五万行代码完全重构，与原版Map-Reduce没有任何复用，而Corona相对原版有大量的重复，更接近与改进了部分框架的升级。</p>
+<p><strong>Corona说明书上宣称的特点</strong>：</p>
+<ul>
+<li>Better scalability and cluster utilization</li>
+<li>Lower latency for small jobs</li>
+<li>Ability to upgrade without disruption</li>
+<li>Scheduling based on actual task resource requirements rather than a count of map and reduce tasks </li>
+</ul>
+<h3>Corona的基本组件</h3>
+<p><strong>Corona架构</strong>：
+<img alt="Corona" src="http://i.imgur.com/xNagLob.jpg" /></p>
+<ol>
+<li><strong>Cluster Manager</strong> 类似于YARN中的Resource Manager，负责资源分配和调度。Cluster Manager掌握着各个节点的资源使用情况，并将资源分配给各个作业（默认调度器为Fair Scheduler）。同YARN中的Resource Manager一样，Resource Manager是一个高度抽象的资源统一分配与调度框架，它不仅可以为MapReduce，也可以为其他计算框架分配资源。</li>
+<li><strong>Corona Job Tracker</strong> 类似于YARN中的Application Master，用于作业的监控和容错，它可以运行在两个模式下：1） 作为JobClient，用于提交作业和方便用户跟踪作业运行状态 2）   作为一个Task运行在某个TaskTracker上。与MRv1中的Job Tracker不同，每个Corona Job Tracker只负责监控一个作业。</li>
+<li><strong>Corona Task Tracker</strong> 类似于YARN中的Node Manager，它的实现重用了MRv1中Task Tracker的很多代码，它通过心跳将节点资源使用情况汇报给Cluster Manager，同时会与Corona Job Tracker通信，以获取新任务和汇报任务运行状态。</li>
+<li><strong>Proxy Job Tracker</strong> 用于离线展示一个作业的历史运行信息，包括Counter、metrics、各个任务运行信息等。</li>
+</ol>
+<h3>Corona框架的搭建（single node）</h3>
+<p><strong>Source</strong>：</p>
+<p><a href="https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona">https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona</a></p>
+<p><strong>Building</strong></p>
+<p>Start in the hadoop-20 parent path and compile the code with:</p>
+<div class="highlight"><pre><span class="n">ant</span> <span class="o">-</span><span class="n">Dversion</span><span class="o">=</span><span class="mf">0.20</span> <span class="n">clean</span> <span class="n">jar</span> <span class="n">bin</span><span class="o">-</span><span class="n">package</span>
+</pre></div>
+
+
+<p>Starting up the cluster</p>
+<ul>
+<li>
+<p>First, set up the required environment and useful aliases.</p>
+<p>source singleNodeHadoop/singleNodeSwitch.sh corona</p>
+</li>
+<li>
+<p>If this is the first time, format the namespace in /tmp with</p>
+<div class="highlight"><pre><span class="n">hadoop</span> <span class="n">namenode</span> <span class="o">-</span><span class="n">format</span>
+<span class="n">Start</span> <span class="n">HDFS</span><span class="o">:</span>
+<span class="n">start</span><span class="o">-</span><span class="n">dfs</span>
+<span class="n">Start</span> <span class="n">Corona</span><span class="o">:</span>
+<span class="n">start</span><span class="o">-</span><span class="n">corona</span>
+</pre></div>
+
+
+</li>
+<li>
+<p>There are corresponding commands to stop the clusters
+    stop-dfs</p>
+<p>stop-corona</p>
+</li>
+</ul>
+<p>At this point you will be able to look at the local Corona Cluster Manager UI.</p>
+<p><strong>Example Job</strong></p>
+<div class="highlight"><pre><span class="n">export</span> <span class="n">HADOOP_CLASSPATH</span><span class="o">=</span><span class="err">$</span><span class="n">HADOOP_HOME</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">contrib</span><span class="o">/</span><span class="n">corona</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">libthrift</span><span class="o">-</span><span class="mf">0.7.0</span><span class="p">.</span><span class="n">jar</span> <span class="n">hadoop</span> <span class="n">jar</span> <span class="n">build</span><span class="o">/</span><span class="n">hadoop</span><span class="o">-</span><span class="mf">0.20</span><span class="o">-</span><span class="n">examples</span><span class="p">.</span><span class="n">jar</span> <span class="n">sleep</span> <span class="o">-</span><span class="n">Dmapred</span><span class="p">.</span><span class="n">fairscheduler</span><span class="p">.</span><span class="n">pool</span><span class="o">=</span><span class="n">group_a</span><span class="p">.</span><span class="n">pool_sla</span> <span class="o">-</span><span class="n">m</span> <span class="mi">10</span> <span class="o">-</span><span class="n">r</span> <span class="mi">2</span>
+</pre></div></div>
         <hr />
     </div>
 		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="http://www.liustrive.com/pages/2013/04/06/network-aware-resource-allocation-in-distributed-clouds-bi-ji.html"><h2>Network Aware Resource Allocation in Distributed Clouds 笔记</h2></a>
+        <div class= "well small"> 2013-04-06
+
+by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>INFOCOM 2012 </p>
+<p>Mansoor Alicherry, T.V. Lakshman</p>
+<p>Bell Labs. </p>
+<p>这篇文章主要介绍了通讯负载和延迟最小化的高效的resource allocation算法。</p>
+<p>Key contribution：</p>
+<ol>
+<li>Develop an efficient 2-approximation algorithm for the optimal selection of data centers in the distributed cloud.</li>
+<li>Use of an optimal algorithm for rack and server selection.</li>
+<li>develop a heuristic for partitioning the requested resources for the task ...</li></ol> <a class="btn btn-info xsmall" href="http://www.liustrive.com/pages/2013/04/06/network-aware-resource-allocation-in-distributed-clouds-bi-ji.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="http://www.liustrive.com/pages/2013/03/29/yarnchu-tan-zi-yuan-diao-du.html"><h2>Yarn初探（一）资源调度</h2></a>
+        <div class= "well small"> 2013-03-29
+
+by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>资源调度器</h3>
+<p><img alt="" src="http://i.imgur.com/1pY6g1v.jpg" />
+YARN的资源管理器本质上像一个事件处理器，需要处理6种SchedulerEvent类型的事件：</p>
+<ul>
+<li><strong>NODE_REMOVED</strong>：表示集群中被移除一个计算节点，资源调度器收到该事件时需要从可分配资源总量中移除相应的资源量。</li>
+<li><strong>NODE_ADDED</strong>：表示集群中增加了一个计算节点，资源调度器收到该事件时需要将新增的资源量添加到可分配资源总量中。</li>
+<li><strong>APPLICATION_ADDED</strong>：表示ResourceManager收到一个新的Application。资源管理器需将该Application添加到相应的数据结构中。通常，资源管理器需要为每个application维护一个独立的数据结构，以便于统一管理和资源分配。</li>
+<li><strong>APPLICATION_REMOVED</strong>：事件APPLICATION_REMOVED表示一个Application运行结束，资源管理器需将该Application从相应的数据结构中清除。</li>
+<li><strong>CONTAINER_EXPIRED</strong>：当资源调度器将一个container分配给某个ApplicationMaster后，如果该ApplicationMaster在一定时间间隔内没有使用该container，则资源调度器会对该container进行再分配。</li>
+<li><strong>NODE_UPDATE</strong>：NodeManager通过心跳机制向ResourceManager汇报各个container运行情况，会触发一个NODE_UDDATE事件。</li>
+</ul>
+<p>其中，NODE_UPDATE事件发生时表示可能有新的container得到释放，因此该事件会触发资源分配，该事件是6个事件中最重要的事件，它会触发资源调度器最核心的资源分配机制。</p>
+<h3>资源管理与分配</h3>
+<p>相比于MapReduce v1中的资源调度器，YARN采用了事件驱动的模型，因此编写起来更加复杂。同MapReduce v1一样，YARN也自带了三种常用的调度器，分别是FIFO，Capacity Scheduler和Fair Scheduler，其中，第一个是默认的调度器，它属于批处理调度器，而后两个属于多租户调度器，采用树形多队列的形式组织资源。</p>
+<p>YARN的资源表示模型目前只支持CPU和内存的管理与分配，NodeManager启动时，会向ResourceManager注册 ...</p> <a class="btn btn-info xsmall" href="http://www.liustrive.com/pages/2013/03/29/yarnchu-tan-zi-yuan-diao-du.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="http://www.liustrive.com/pages/2013/03/14/hello.html"><h2>Hello World</h2></a>
+        <div class= "well small"> 2013-03-14
+
+by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>Hello World</h2>
+<p>开个博客，想想还是用 Hello 镇宅</p> <a class="btn btn-info xsmall" href="http://www.liustrive.com/pages/2013/03/14/hello.html">read more</a></div>
+    </div>	
+				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
@@ -109,6 +245,7 @@ by <a class="url fn" href="http://www.liustrive.com/author/leon.html">Leon</a>
                 </li>
                 
                 <li><a href="http://www.liustrive.com/category/life.html">life</a></li>
+                <li><a href="http://www.liustrive.com/category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
