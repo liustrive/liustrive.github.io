@@ -74,24 +74,25 @@ by <a class="url fn" href="../../../../author/leon.html">Leon</a>
 <p>此即前文所述前向神经网络语言模型，采用四层神经网络（原文讲实际是三层神经网络）
 输入层、投影层、隐藏层、输出层
 每个训练样本的计算复杂度为：
-$$Q = N × D + N × D × H + H × V$$
+<div class="math">$$Q = N × D + N × D × H + H × V$$</div>
 其中，N为n-gram模型中n值，D为词向量维度，H是隐藏层size（通常500-1000），V是词表大小，同时也是输出层的节点数量，N<em>D为输入层到投影层权重个数，H</em>V表示隐藏层到输出层的权重个数，N<em>D</em>H是投影层到隐藏层权重个数。<br />
-在文中的模型中，使用Huffman树来表示输出层hierarchical softmax，从而输出层参数从$H<em>V\rightarrow H</em>log(V)$。<br />
+在文中的模型中，使用Huffman树来表示输出层hierarchical softmax，从而输出层参数从<span class="math">\(H*V\rightarrow H*log(V)\)</span>。<br />
 但是这个提速并不能使神经网络语言模型获得决定性提升，因为计算瓶颈变成了N<em>D</em>H，于是提出了没有隐藏层的模型结构。</p>
 <h5><strong>recurrent neural net language model（RNNLM）</strong></h5>
 <p>递归神经网络语言模型没有投影层，只有输入层、隐藏层、输出层，该模型使用延时连接将隐藏层相连接，以使模型具有短期记忆，训练样本计算复杂度为：
-$Q = H × H + H × V$
+<span class="math">\(Q = H × H + H × V\)</span>
 其中词向量与隐藏层维度都是H，这种模型也可以通过Huffman树表示输出层的方式提升效率</p>
 <h5><strong>New Log-linear Models</strong></h5>
 <p>前文提到，隐藏层计算复杂度成为性能瓶颈，作者观察到，隐藏层的非线性结构导致了需要大量的计算，虽然这种非线性结构更加精确，但是在这一节中作者介绍了两种模型，去除了隐藏层，并且分两步训练：1、计算词特征向量，2、在词特征向量基础上训练n-gram神经网络，以此大幅提升效率。</p>
 <h5><strong>Continuous Bag-of-Words Model</strong></h5>
 <p><center><img alt="" src="http://cl.ly/YFTh/CBOW.jpg" />  </center></p>
 <p>CBOW模型与前向神经网络模型相近，但是去除了隐藏层，所有词都通过加和平均投影到同一个D维向量上，训练的复杂度为：
-$$Q = N × D + D × \log_2(V)$$</p>
+<div class="math">$$Q = N × D + D × \log_2(V)$$</div>
+</p>
 <h5><strong>Continuous Skip-gram Model</strong></h5>
 <p><center><img alt="" src="http://cl.ly/YF8I/skip_gram.jpg" /></center>
 Skip-gram模型与CBOW模型相似，只不过后者根据上下文预测当前词，而前者根据当前词预测上下文可能存在的词，训练的计算复杂度为：
-$$Q = C × (D + D × \log_2(V ))$$
+<div class="math">$$Q = C × (D + D × \log_2(V ))$$</div>
 其中C是词间最大距离</p>
 <h4><strong>实验部分</strong></h4>
 <p>作者表示中国相似法国相似意大利这种例子太没意思，前文也提到了训练产出的词向量具有（一定程度的）代数运算性质，于是文中设计了一系列实验，用代数运算的结果来验证模型的训练结果能否反映词之间的关系，并以此表示词向量的好坏。</p>
@@ -117,37 +118,34 @@ RNNLM效果最差，虽然NNLM的非线性隐藏层理论上提供更高的精�
 <center><img alt="" src="http://cl.ly/YF2d/cbow-exp5.jpg" /></center></p>
 <p>可以发现CBOW和Skip-gram首先在速度上有绝对优势，NNLM甚至无法计算1000维词向量，准确性上也超过了NNLM模型。</p>
 <h5><strong>Microsoft Research Sentence Completion Challenge</strong></h5>
-<p>作者最后引入微软的句子补完测试，其内容是1040个句子，去掉其中一个词，提供五个词作为候选，目标是找出最合适的词使句子完整，文中使用的skip-gram模型测试，其准确率并不如LSA模型，但是结合RNNLM，通过加权平均，能使结果准确率提升到历史最高的58.9%。</p><script type= "text/javascript">
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-</script>
-</div>
+<p>作者最后引入微软的句子补完测试，其内容是1040个句子，去掉其中一个词，提供五个词作为候选，目标是找出最合适的词使句子完整，文中使用的skip-gram模型测试，其准确率并不如LSA模型，但是结合RNNLM，通过加权平均，能使结果准确率提升到历史最高的58.9%。</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
 	
         <hr>
 

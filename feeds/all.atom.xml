@@ -4,35 +4,38 @@
 文中提到词向量表示的一大弊端是它们无法表示一些词组成的常用短语，这短语不是字面上把其组成词连接起来的意义，于是提出扩展，将基于词的模型变成基于短语的模型，扩展的原理是先抓出这些短语，然后把这些短语作为整体的“词”加入训练集，然后使用上文实验部分中提到的方法，利用词向量代数运算验证准确性。&lt;/p&gt;
 &lt;h4&gt;&lt;strong&gt;The Skip-gram Model&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;上文介绍过skip-gram模型的结构，给定一句由训练词{w1,w2,w3…wT}，其目标是最大化平均对数概率，c为目标词的前后上下文长度
- $$\frac{1}{T}\sum_{t=1}^T \sum_{-c\leq j \leq c, j\neq0} \log p(w_{t+j}|w_t)$$
-其中，$p(w_{t+j} | w_t)$ 用softmax函数计算：
- $$\hat{p}(w_t|w_{t-1},...,w_{t-n+1}) = \frac{e^{y_{w_t}}}{\sum_i e^{y_i}}$$&lt;br /&gt;
+ &lt;div class="math"&gt;$$\frac{1}{T}\sum_{t=1}^T \sum_{-c\leq j \leq c, j\neq0} \log p(w_{t+j}|w_t)$$&lt;/div&gt;
+其中，&lt;span class="math"&gt;\(p(w_{t+j} | w_t)\)&lt;/span&gt; 用softmax函数计算：
+ &lt;div class="math"&gt;$$\hat{p}(w_t|w_{t-1},...,w_{t-n+1}) = \frac{e^{y_{w_t}}}{\sum_i e^{y_i}}$$&lt;/div&gt;
+&lt;br /&gt;
 即：
- $$p(w_O| w_I) = \frac{exp({v'}&lt;em w_I="w_I"&gt;{w_O} {}^{\mathrm{T}} v&lt;/em&gt;)}{\sum_{w=1}^W exp(v'&lt;em w_I="w_I"&gt;w {}^{\mathrm{T}}v&lt;/em&gt;)}$$  &lt;/p&gt;
+ &lt;div class="math"&gt;$$p(w_O| w_I) = \frac{exp({v'}_{w_O} {}^{\mathrm{T}} v_{w_I})}{\sum_{w=1}^W exp(v'_w {}^{\mathrm{T}}v_{w_I})}$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;h4&gt;&lt;strong&gt;Hierarchical Softmax&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;Hierarchical Softmax是full softmax的一种计算量优化，其目标是减少计算：&lt;br /&gt;
-$$p(A|C) = \frac{e^{-E(A,C)}}{\sum_{v=1}^V e^{-E(wv,C)}}$$
+&lt;div class="math"&gt;$$p(A|C) = \frac{e^{-E(A,C)}}{\sum_{v=1}^V e^{-E(wv,C)}}$$&lt;/div&gt;
 时所需的巨大计算量，使其运算量从计算|V|个输出节点变成log|V|
 其推导过程如下：&lt;br /&gt;
 &lt;center&gt;&lt;img alt="" src="http://cl.ly/YFsO/cbow-exp_2_1.jpg" /&gt;&lt;/center&gt;&lt;/p&gt;
 &lt;h4&gt;&lt;strong&gt;Negative Sampling&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;文章提出一种代替hierarchical softmax的方法（NCE），NCE能够求出softmax的对数概率函数近似最大，由于skip-gram模型只关心词向量的质量，所以在保证词向量准确性的条件下，还可以进一步简化NCE，文章定义了NCG方法：
 每个$\log p(W_O | W_I) $的运算被下式替代：&lt;br /&gt;
-$$\log \sigma ({v'}&lt;em w_I="w_I"&gt;{w_O} {}^{\mathrm{T}}v&lt;/em&gt;) + \sum_{i=1}^{k} E_{w_i \sim P_n(w)}\log \sigma(-{v'}&lt;em w_I="w_I"&gt;{w_i} {}^{\mathrm{T}}v&lt;/em&gt;)]$$&lt;br /&gt;
+&lt;div class="math"&gt;$$\log \sigma ({v'}_{w_O} {}^{\mathrm{T}}v_{w_I}) + \sum_{i=1}^{k} E_{w_i \sim P_n(w)}\log \sigma(-{v'}_{w_i} {}^{\mathrm{T}}v_{w_I})]$$&lt;/div&gt;
+&lt;br /&gt;
 其中k是为每个数据样本选用k个负类样本，在小的数据集时可以取5-20，大的数据集甚至取2-5就够用，Negative sampling 和NCE的主要区别是NCE同时需要样本和噪声分布的数值概率 ？  &lt;/p&gt;
 &lt;h4&gt;&lt;strong&gt;Subsampling of Frequent Words&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;在大型的语料中，一些词会有非常高的词频，比如the, a , in 这种类型词，但是这种高频词往往比一些低频词提供更少的有效信息，所以为了逆转这种不平衡性，文章提出一种二次抽样方法：&lt;br /&gt;
- $$P(w_i) = 1-\sqrt{\frac{t}{f(w_i)}}$$
-其中$f(w_i)$是词$w_i$的词频，t是预设的阈值，词频高于t的$w_i$ 具有$P(w_i)$的概率被抛弃。&lt;/p&gt;
+&lt;div class="math"&gt;$$P(w_i) = 1-\sqrt{\frac{t}{f(w_i)}}$$&lt;/div&gt;
+其中&lt;span class="math"&gt;\(f(w_i)\)&lt;/span&gt;是词&lt;span class="math"&gt;\(w_i\)&lt;/span&gt;的词频，t是预设的阈值，词频高于t的&lt;span class="math"&gt;\(w_i\)&lt;/span&gt; 具有&lt;span class="math"&gt;\(P(w_i)\)&lt;/span&gt;的概率被抛弃。&lt;/p&gt;
 &lt;h3&gt;&lt;strong&gt;实验部分：&lt;/strong&gt;&lt;/h3&gt;
 &lt;h4&gt;&lt;strong&gt;传统的实验&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;这篇文章的实验任务也采用上文的代数运算准确率衡量，实验描述参见上文Task description 
 文中实验Skip-gram采用10亿数据量的数据集，抛弃词频少于5次的词，实验结果如图Table1
  &lt;center&gt;&lt;img alt="" src="http://cl.ly/YFvs/cbow-exp_2_2.jpg" /&gt;&lt;/center&gt;  &lt;/p&gt;
-&lt;p&gt;可以观察到Negative Sampling准确率高于HS算法，比原版的NCE也有少许提升，同时观察到以$10^{-5}$为阈值二次采样过滤后，大幅缩短了训练时间，同时少量提升了词向量准确度。&lt;/p&gt;
+&lt;p&gt;可以观察到Negative Sampling准确率高于HS算法，比原版的NCE也有少许提升，同时观察到以&lt;span class="math"&gt;\(10^{-5}\)&lt;/span&gt;为阈值二次采样过滤后，大幅缩短了训练时间，同时少量提升了词向量准确度。&lt;/p&gt;
 &lt;h4&gt;&lt;strong&gt;短语实验&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;上文提到过，一些由词组成的固定短语并不是其字面意义，于是作者抓出这些固定短句，并以其为整体加入词库而不是拆分成单个的词，抓出这些词的具体方法是：&lt;br /&gt;
-$$score(w_i,w_j) = \frac{count(w_i,w_j)-\delta}{count(w_i)\times count(w_j)}$$
+&lt;div class="math"&gt;$$score(w_i,w_j) = \frac{count(w_i,w_j)-\delta}{count(w_i)\times count(w_j)}$$&lt;/div&gt;
 基本上就是词以固定形式出现的次数减去一个折扣系数与他们各自出现频率的比值，已决定这个短语的权值，最后权值超过预设的阈值的短语被取出作为固定短语，文中实验采用递降的阈值对训练集跑了2-4次这样的取短语操作，使长固定短语也能被抓出&lt;br /&gt;
 &lt;center&gt;&lt;img alt="" src="http://cl.ly/YGDD/cbow-exp_2_3.jpg" /&gt;&lt;/center&gt;&lt;/p&gt;
 &lt;p&gt;这里具体怎么个2-4次法，前次的输出作为后次的数据集还是什么，文中没说清。&lt;/p&gt;
@@ -46,37 +49,34 @@ $$score(w_i,w_j) = \frac{count(w_i,w_j)-\delta}{count(w_i)\times count(w_j)}$$
 &lt;p&gt;文章最后还讨论了词向量的加法语义合成，如Table4所示：&lt;br /&gt;
  &lt;center&gt;&lt;img alt="" src="http://cl.ly/YGCO/cbow-exp_2_5.jpg" /&gt;&lt;/center&gt;&lt;br /&gt;
 词向量加法能得到与相加的两词语义最接近的词或短语，这主要是因为在训练过程中，相加的两词有更大可能与结果短语或词在同一句中，比如“中国”+“首都”= “北京”&lt;/p&gt;
-&lt;p&gt;文章最后横向与相近工作的其它模型做了比较，比较训练时间以及词向量的准确率，结果表明Skip-gram phrase model 具有最快的训练时间（随着数据集规模的增长只有少量时间增加）和很好的准确性。&lt;/p&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="NLP"></category><category term="word2vec"></category><category term="Mikolov"></category></entry><entry><title>Efﬁcient Estimation of Word Representations in Vector Space 阅读笔记</title><link href="http://www.liustrive.com/pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html" rel="alternate"></link><updated>2014-07-25T15:51:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-25:pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html</id><summary type="html">&lt;h6&gt;via: &lt;a href="www.liustrive.com"&gt;liustrive.com&lt;/a&gt;&lt;/h6&gt;
+&lt;p&gt;文章最后横向与相近工作的其它模型做了比较，比较训练时间以及词向量的准确率，结果表明Skip-gram phrase model 具有最快的训练时间（随着数据集规模的增长只有少量时间增加）和很好的准确性。&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="NLP"></category><category term="word2vec"></category><category term="Mikolov"></category></entry><entry><title>Efﬁcient Estimation of Word Representations in Vector Space 阅读笔记</title><link href="http://www.liustrive.com/pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html" rel="alternate"></link><updated>2014-07-25T15:51:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-25:pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html</id><summary type="html">&lt;h6&gt;via: &lt;a href="www.liustrive.com"&gt;liustrive.com&lt;/a&gt;&lt;/h6&gt;
 &lt;h4&gt;&lt;strong&gt;背景&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;现有模型，比如前文Bengio的采用非线性激活函数tanh的神经网络模型，虽然准确度上有优势，但是算法的复杂度较高，无法训练更大的数据集，比如特征向量维度为50-100情况下训练超过几百兆个的语料。&lt;/p&gt;
 &lt;h4&gt;&lt;strong&gt;目标&lt;/strong&gt;&lt;/h4&gt;
@@ -86,24 +86,25 @@ $$score(w_i,w_j) = \frac{count(w_i,w_j)-\delta}{count(w_i)\times count(w_j)}$$
 &lt;p&gt;此即前文所述前向神经网络语言模型，采用四层神经网络（原文讲实际是三层神经网络）
 输入层、投影层、隐藏层、输出层
 每个训练样本的计算复杂度为：
-$$Q = N × D + N × D × H + H × V$$
+&lt;div class="math"&gt;$$Q = N × D + N × D × H + H × V$$&lt;/div&gt;
 其中，N为n-gram模型中n值，D为词向量维度，H是隐藏层size（通常500-1000），V是词表大小，同时也是输出层的节点数量，N&lt;em&gt;D为输入层到投影层权重个数，H&lt;/em&gt;V表示隐藏层到输出层的权重个数，N&lt;em&gt;D&lt;/em&gt;H是投影层到隐藏层权重个数。&lt;br /&gt;
-在文中的模型中，使用Huffman树来表示输出层hierarchical softmax，从而输出层参数从$H&lt;em&gt;V\rightarrow H&lt;/em&gt;log(V)$。&lt;br /&gt;
+在文中的模型中，使用Huffman树来表示输出层hierarchical softmax，从而输出层参数从&lt;span class="math"&gt;\(H*V\rightarrow H*log(V)\)&lt;/span&gt;。&lt;br /&gt;
 但是这个提速并不能使神经网络语言模型获得决定性提升，因为计算瓶颈变成了N&lt;em&gt;D&lt;/em&gt;H，于是提出了没有隐藏层的模型结构。&lt;/p&gt;
 &lt;h5&gt;&lt;strong&gt;recurrent neural net language model（RNNLM）&lt;/strong&gt;&lt;/h5&gt;
 &lt;p&gt;递归神经网络语言模型没有投影层，只有输入层、隐藏层、输出层，该模型使用延时连接将隐藏层相连接，以使模型具有短期记忆，训练样本计算复杂度为：
-$Q = H × H + H × V$
+&lt;span class="math"&gt;\(Q = H × H + H × V\)&lt;/span&gt;
 其中词向量与隐藏层维度都是H，这种模型也可以通过Huffman树表示输出层的方式提升效率&lt;/p&gt;
 &lt;h5&gt;&lt;strong&gt;New Log-linear Models&lt;/strong&gt;&lt;/h5&gt;
 &lt;p&gt;前文提到，隐藏层计算复杂度成为性能瓶颈，作者观察到，隐藏层的非线性结构导致了需要大量的计算，虽然这种非线性结构更加精确，但是在这一节中作者介绍了两种模型，去除了隐藏层，并且分两步训练：1、计算词特征向量，2、在词特征向量基础上训练n-gram神经网络，以此大幅提升效率。&lt;/p&gt;
 &lt;h5&gt;&lt;strong&gt;Continuous Bag-of-Words Model&lt;/strong&gt;&lt;/h5&gt;
 &lt;p&gt;&lt;center&gt;&lt;img alt="" src="http://cl.ly/YFTh/CBOW.jpg" /&gt;  &lt;/center&gt;&lt;/p&gt;
 &lt;p&gt;CBOW模型与前向神经网络模型相近，但是去除了隐藏层，所有词都通过加和平均投影到同一个D维向量上，训练的复杂度为：
-$$Q = N × D + D × \log_2(V)$$&lt;/p&gt;
+&lt;div class="math"&gt;$$Q = N × D + D × \log_2(V)$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;h5&gt;&lt;strong&gt;Continuous Skip-gram Model&lt;/strong&gt;&lt;/h5&gt;
 &lt;p&gt;&lt;center&gt;&lt;img alt="" src="http://cl.ly/YF8I/skip_gram.jpg" /&gt;&lt;/center&gt;
 Skip-gram模型与CBOW模型相似，只不过后者根据上下文预测当前词，而前者根据当前词预测上下文可能存在的词，训练的计算复杂度为：
-$$Q = C × (D + D × \log_2(V ))$$
+&lt;div class="math"&gt;$$Q = C × (D + D × \log_2(V ))$$&lt;/div&gt;
 其中C是词间最大距离&lt;/p&gt;
 &lt;h4&gt;&lt;strong&gt;实验部分&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;作者表示中国相似法国相似意大利这种例子太没意思，前文也提到了训练产出的词向量具有（一定程度的）代数运算性质，于是文中设计了一系列实验，用代数运算的结果来验证模型的训练结果能否反映词之间的关系，并以此表示词向量的好坏。&lt;/p&gt;
@@ -129,37 +130,34 @@ RNNLM效果最差，虽然NNLM的非线性隐藏层理论上提供更高的精�
 &lt;center&gt;&lt;img alt="" src="http://cl.ly/YF2d/cbow-exp5.jpg" /&gt;&lt;/center&gt;&lt;/p&gt;
 &lt;p&gt;可以发现CBOW和Skip-gram首先在速度上有绝对优势，NNLM甚至无法计算1000维词向量，准确性上也超过了NNLM模型。&lt;/p&gt;
 &lt;h5&gt;&lt;strong&gt;Microsoft Research Sentence Completion Challenge&lt;/strong&gt;&lt;/h5&gt;
-&lt;p&gt;作者最后引入微软的句子补完测试，其内容是1040个句子，去掉其中一个词，提供五个词作为候选，目标是找出最合适的词使句子完整，文中使用的skip-gram模型测试，其准确率并不如LSA模型，但是结合RNNLM，通过加权平均，能使结果准确率提升到历史最高的58.9%。&lt;/p&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="NLP"></category><category term="word2vec"></category><category term="Mikolov"></category></entry><entry><title>A Neural Probabilistic Language Model 入门笔记</title><link href="http://www.liustrive.com/pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html" rel="alternate"></link><updated>2014-07-12T00:29:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-12:pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html</id><summary type="html">&lt;h5&gt;Via:  &lt;a href="www.liustrive.com"&gt;liusrive.com&lt;/a&gt;&lt;/h5&gt;
+&lt;p&gt;作者最后引入微软的句子补完测试，其内容是1040个句子，去掉其中一个词，提供五个词作为候选，目标是找出最合适的词使句子完整，文中使用的skip-gram模型测试，其准确率并不如LSA模型，但是结合RNNLM，通过加权平均，能使结果准确率提升到历史最高的58.9%。&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="NLP"></category><category term="word2vec"></category><category term="Mikolov"></category></entry><entry><title>A Neural Probabilistic Language Model 入门笔记</title><link href="http://www.liustrive.com/pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html" rel="alternate"></link><updated>2014-07-12T00:29:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-12:pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html</id><summary type="html">&lt;h5&gt;Via:  &lt;a href="www.liustrive.com"&gt;liusrive.com&lt;/a&gt;&lt;/h5&gt;
 &lt;hr /&gt;
 &lt;h2&gt;&lt;strong&gt;目标：&lt;/strong&gt;&lt;/h2&gt;
 &lt;p&gt;&lt;strong&gt;learn the joint probability function of sequences of words in a language&lt;/strong&gt;&lt;/p&gt;
@@ -199,29 +197,31 @@ A dog was running in a room&lt;/p&gt;
 &lt;p&gt;训练集:
 sequence w1…wT ，其中的词wt 属于于很大的有限集词表V
 目标模型： 
-$$f(w_t,...,w_{t=n+1}) = \hat{P}(w_t | w_1^{t-1})$$
+&lt;div class="math"&gt;$$f(w_t,...,w_{t=n+1}) = \hat{P}(w_t | w_1^{t-1})$$&lt;/div&gt;
 将目标分解为两部分：
 &lt;center&gt; &lt;img alt="" src="http://cl.ly/YFku/NNLM.jpg" /&gt;&lt;br /&gt;
 图1 三层神经网络&lt;/center&gt;&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;将词表中的元素i映射为distributed feature vectors，即特征向量C(i)，C是一个|V|*m的矩阵，m为特征向量维数，C(i)为C中一行;&lt;/li&gt;
-&lt;li&gt;根据上下文生成的概率分布函数g，其输入为前n词的 (C(wt−n+1),••• ,C(wt−1))，输出为一个向量，其第i的元素表示 $\hat{P}(w_t = i|w_1^{t-1})$
-$$f(i,w_{t-1},...,w_{t-1-n+1} = g(i,C(w_{t-1},...,C(w_{t-n+1})))$$&lt;/li&gt;
+&lt;li&gt;根据上下文生成的概率分布函数g，其输入为前n词的 (C(wt−n+1),••• ,C(wt−1))，输出为一个向量，其第i的元素表示 &lt;span class="math"&gt;\(\hat{P}(w_t = i|w_1^{t-1})\)&lt;/span&gt;
+&lt;div class="math"&gt;$$f(i,w_{t-1},...,w_{t-1-n+1} = g(i,C(w_{t-1},...,C(w_{t-n+1})))$$&lt;/div&gt;
+&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;函数f由两个映射关系g和C构成，C的参数就是|V|&lt;em&gt;m矩阵表示的词特征向量，w到C(w)的映射表示从矩阵C取出一行，C和g的参数 $θ= (C,ω)$ 构成模型需要学习的参数集，训练的过程是寻找能够使训练语料的penalized log-likelihood最大的$θ$，学习过程中参数数量和词表大小、上下文数量n成线性关系。
- $$L=\frac{1}{T}\sum_t log f(w_t,w_{t-1},...,w_{t-n+1};\theta)+ R(\theta)$$
+&lt;p&gt;函数f由两个映射关系g和C构成，C的参数就是|V|&lt;em&gt;m矩阵表示的词特征向量，w到C(w)的映射表示从矩阵C取出一行，C和g的参数 &lt;span class="math"&gt;\(θ= (C,ω)\)&lt;/span&gt; 构成模型需要学习的参数集，训练的过程是寻找能够使训练语料的penalized log-likelihood最大的&lt;span class="math"&gt;\(θ\)&lt;/span&gt;，学习过程中参数数量和词表大小、上下文数量n成线性关系。
+ &lt;div class="math"&gt;$$L=\frac{1}{T}\sum_t log f(w_t,w_{t-1},...,w_{t-n+1};\theta)+ R(\theta)$$&lt;/div&gt;
 文中使用的实际包含一个隐藏层的神经网络进行训练，输出层共|V|个节点, 采用softmax激活函数将y归一化成概率公式：
- $$\hat{P}(w_t|w_{t-1},...,w_{t-n+1}) = \frac{e^{y_{w_t}}}{\sum_i e^{y_i}}$$
+ &lt;div class="math"&gt;$$\hat{P}(w_t|w_{t-1},...,w_{t-n+1}) = \frac{e^{y_{w_t}}}{\sum_i e^{y_i}}$$&lt;/div&gt;
 &lt;/em&gt;注：此处公式参见背景知识：神经网络*&lt;/p&gt;
-&lt;p&gt;其中，$y_i$ 为下一个词为i的未归一化log概率，隐藏层使用d+Hx得到d为偏置项，具有参数b,W,U,d,H： 
- $$y=b+Wx+U tanh(d+Hx)$$
+&lt;p&gt;其中，&lt;span class="math"&gt;\(y_i\)&lt;/span&gt; 为下一个词为i的未归一化log概率，隐藏层使用d+Hx得到d为偏置项，具有参数b,W,U,d,H： 
+ &lt;div class="math"&gt;$$y=b+Wx+U tanh(d+Hx)$$&lt;/div&gt;
 输入层x为将C(wt−1),C(wt−2),••• ,C(wt−n+1)这些向量首尾相连形成的（n-1）m维向量：
- $$x=(C(w_{t-1}),C(w_{t-2}),...,C(w_{t-n+1}))$$
+ &lt;div class="math"&gt;$$x=(C(w_{t-1}),C(w_{t-2}),...,C(w_{t-n+1}))$$&lt;/div&gt;
 于是需要训练的参数集合为：
- $$\theta = (b,d,W,U,H,C)$$
+ &lt;div class="math"&gt;$$\theta = (b,d,W,U,H,C)$$&lt;/div&gt;
 其中，U为一个|V|&lt;em&gt;h矩阵，表示隐藏层到输出层的参数，矩阵W为一个|V|&lt;/em&gt;（n-1）m的矩阵，包含了输入层到输出层的直连边，（参见图1中虚线以及正文末算法）。&lt;/p&gt;
 &lt;p&gt;最后通过随机梯度下降法(SGD)优化模型，最终获得词向量和语言模型。
- $$\theta \leftarrow \theta +  \varepsilon\frac{\partial log\hat{P}(w_t|w_{t-1},...,w_{t-n+1})}{\partial \theta}$$&lt;/p&gt;
+ &lt;div class="math"&gt;$$\theta \leftarrow \theta +  \varepsilon\frac{\partial log\hat{P}(w_t|w_{t-1},...,w_{t-n+1})}{\partial \theta}$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;h2&gt;&lt;strong&gt;Parallel Implementation&lt;/strong&gt;&lt;/h2&gt;
 &lt;p&gt;虽然前文提到本文模型参数增长为线性增长，但由于采用n-gram模型时，计算P(wt|wt−1,...,wt−n+1) 时并不需要计算词表中每一个词的概率，神经网络模型所需的计算量远大于n-gram模型。
 有关并行处理，在共享内存多处理机上文中算法实现首先采用每个处理器处理一部分子数据集，update模型的参数时需要等待资源锁，结果导致大部分CPU周期用来等待其它处理器释放参数的写锁；文章随后采用了异步实现，任何处理器任何时间都可以写共享内存，这样的实现会导致一些处理器update的参数被其它处理器写线程覆盖，但是实验表明这种noise不会降低训练速度。
@@ -233,80 +233,81 @@ $$f(i,w_{t-1},...,w_{t-1-n+1} = g(i,C(w_{t-1},...,C(w_{t-n+1})))$$&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;对于单一训练样本，假设有词表数|V|，隐藏单元h，词序n，词特征项m，则计算复杂度为： |V|(1+nm+h)+h(1+nm)+nm
 单一训练样本复杂度除以计算weighted sums of output units复杂度得到：
- $$\frac{|V|(1+(n-1)m+h)}{|V|(1+(n-1)m+h)+h(1+(n-1)m)+(n-1)m}$$
+ &lt;div class="math"&gt;$$\frac{|V|(1+(n-1)m+h)}{|V|(1+(n-1)m+h)+h(1+(n-1)m)+(n-1)m}$$&lt;/div&gt;
 可知总体上将输出单元计算并行化是有优势的。&lt;/p&gt;
 &lt;h2&gt;&lt;strong&gt;BP part&lt;/strong&gt;&lt;/h2&gt;
 &lt;p&gt;&lt;strong&gt;Forward phase，前向计算：&lt;/strong&gt;&lt;br /&gt;
 1. 为词特征层前向计算  &lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;$x(k) \leftarrow C(w_{t-k})$&lt;br /&gt;
-  $x=(x(1),x(2),...,x(n-1))$  &lt;/p&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(x(k) \leftarrow C(w_{t-k})\)&lt;/span&gt;&lt;br /&gt;
+&lt;span class="math"&gt;\(x=(x(1),x(2),...,x(n-1))\)&lt;/span&gt;  &lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;2. 为隐藏层前向计算，d是偏置项，激活函数tanh  &lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;$o \leftarrow d + Hx$&lt;br /&gt;
-   $a \leftarrow tanh(o)$  &lt;/p&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(o \leftarrow d + Hx\)&lt;/span&gt;&lt;br /&gt;
+&lt;span class="math"&gt;\(a \leftarrow tanh(o)\)&lt;/span&gt;  &lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;3. 为第i个块内输出做前向计算  &lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;$s_i \leftarrow 0$&lt;br /&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(s_i \leftarrow 0\)&lt;/span&gt;&lt;br /&gt;
    for each j in i-th block&lt;br /&gt;
-  　$y_j \leftarrow b_j + a.U_j$&lt;br /&gt;
+&lt;span class="math"&gt;\(y_j \leftarrow b_j + a.U_j\)&lt;/span&gt;&lt;br /&gt;
   　if( direct connections) &lt;br /&gt;
-  　　$y_j \leftarrow y_j + x.W_j$  &lt;br /&gt;
-  　$p_j \leftarrow e^{y_j}$&lt;br /&gt;
-  　$S_i \leftarrow S_i + p_j$   &lt;/p&gt;
+&lt;span class="math"&gt;\(y_j \leftarrow y_j + x.W_j\)&lt;/span&gt;  &lt;br /&gt;
+&lt;span class="math"&gt;\(p_j \leftarrow e^{y_j}\)&lt;/span&gt;&lt;br /&gt;
+&lt;span class="math"&gt;\(S_i \leftarrow S_i + p_j\)&lt;/span&gt;   &lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;$S=∑_i s_i$，此计算需在所有处理器间共享$S_i$&lt;/p&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(S=∑_i s_i\)&lt;/span&gt;，此计算需在所有处理器间共享&lt;span class="math"&gt;\(S_i\)&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;4. 正规化概率&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;对第i块内输出以j为下标循环&lt;br /&gt;
-$p_j \leftarrow p_j/S$&lt;/p&gt;
+&lt;span class="math"&gt;\(p_j \leftarrow p_j/S\)&lt;/span&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;5. 更新对数似然函数&lt;/p&gt;
-&lt;p&gt;$$$$&lt;strong&gt;Backward/update phase 后向计算/更新阶段&lt;/strong&gt;&lt;br /&gt;
+&lt;p&gt;&lt;span class="math"&gt;\($\)&lt;/span&gt;$&lt;strong&gt;Backward/update phase 后向计算/更新阶段&lt;/strong&gt;&lt;br /&gt;
 1. 清空梯度向量∂L/∂a，∂L/∂x&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;对第i个块内以j为下标循环&lt;br /&gt;
-  　$\frac{\partial L}{\partial y_j} \leftarrow 1_{j==w_t - p_j}$&lt;br /&gt;
- 　$b_j \leftarrow b_j + \varepsilon \frac{\partial L}{\partial y_j}$&lt;br /&gt;
+&lt;span class="math"&gt;\(\frac{\partial L}{\partial y_j} \leftarrow 1_{j==w_t - p_j}\)&lt;/span&gt;&lt;br /&gt;
+&lt;span class="math"&gt;\(b_j \leftarrow b_j + \varepsilon \frac{\partial L}{\partial y_j}\)&lt;/span&gt;&lt;br /&gt;
  　If(direct connections)&lt;br /&gt;
- 　　$ \frac{\partial L}{\partial x} \leftarrow \frac{\partial L}{\partial x} + \frac{\partial L}{\partial y_j}W_j$&lt;br /&gt;
-　$ \frac{\partial L}{\partial a} \leftarrow \frac{\partial L}{\partial a} + \frac{\partial L}{\partial y_j}W_j$&lt;br /&gt;
+&lt;span class="math"&gt;\( \frac{\partial L}{\partial x} \leftarrow \frac{\partial L}{\partial x} + \frac{\partial L}{\partial y_j}W_j\)&lt;/span&gt;&lt;br /&gt;
+&lt;span class="math"&gt;\( \frac{\partial L}{\partial a} \leftarrow \frac{\partial L}{\partial a} + \frac{\partial L}{\partial y_j}W_j\)&lt;/span&gt;&lt;br /&gt;
 　If(direct connection)&lt;br /&gt;
-　　$W_j \leftarrow W_j + \varepsilon\frac{\partial L}{\partial y_j}x$&lt;br /&gt;
-　$U_j \leftarrow U_j + \varepsilon\frac{\partial L}{\partial y_j}x$  &lt;/p&gt;
+&lt;span class="math"&gt;\(W_j \leftarrow W_j + \varepsilon\frac{\partial L}{\partial y_j}x\)&lt;/span&gt;&lt;br /&gt;
+&lt;span class="math"&gt;\(U_j \leftarrow U_j + \varepsilon\frac{\partial L}{\partial y_j}x\)&lt;/span&gt;  &lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;2. 对$\frac{\partial L}{\partial a}, \frac{\partial L}{\partial x}$求和并在所有处理器上共享&lt;br /&gt;
+&lt;p&gt;2. 对&lt;span class="math"&gt;\(\frac{\partial L}{\partial a}, \frac{\partial L}{\partial x}\)&lt;/span&gt;求和并在所有处理器上共享&lt;br /&gt;
 3. 后向传播并更新隐藏层权重  &lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;k由1到h&lt;br /&gt;
-　$\frac{\partial L}{\partial o_k} \leftarrow (1 -a_k^2)\frac{\partial L}{\partial a_k}$&lt;br /&gt;
-　$\frac{\partial L}{\partial x} \leftarrow \frac{\partial L}{\partial x} + H'\frac{\partial L}{\partial o}$&lt;br /&gt;
-　$d \leftarrow d + \varepsilon \frac{\partial L }{\partial o}$&lt;br /&gt;
-　$H \leftarrow H + \varepsilon \frac{\partial L }{\partial o}x'$  &lt;/p&gt;
+&lt;span class="math"&gt;\(\frac{\partial L}{\partial o_k} \leftarrow (1 -a_k^2)\frac{\partial L}{\partial a_k}\)&lt;/span&gt;&lt;br /&gt;
+&lt;span class="math"&gt;\(\frac{\partial L}{\partial x} \leftarrow \frac{\partial L}{\partial x} + H'\frac{\partial L}{\partial o}\)&lt;/span&gt;&lt;br /&gt;
+&lt;span class="math"&gt;\(d \leftarrow d + \varepsilon \frac{\partial L }{\partial o}\)&lt;/span&gt;&lt;br /&gt;
+&lt;span class="math"&gt;\(H \leftarrow H + \varepsilon \frac{\partial L }{\partial o}x'\)&lt;/span&gt;  &lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;4. 为输入更新此特征向量  &lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;$K ∈ (1,n-1)$&lt;br /&gt;
-$C(w_{t-k} \leftarrow C(w_{t-k}) + \varepsilon \frac{\partial L}{\partial x(k)})$&lt;br /&gt;
- 其中$∂L/(∂x(k))$是∂$L/∂x$的第k分量&lt;/p&gt;
+&lt;p&gt;&lt;span class="math"&gt;\(K ∈ (1,n-1)\)&lt;/span&gt;&lt;br /&gt;
+&lt;span class="math"&gt;\(C(w_{t-k} \leftarrow C(w_{t-k}) + \varepsilon \frac{\partial L}{\partial x(k)})\)&lt;/span&gt;&lt;br /&gt;
+ 其中&lt;span class="math"&gt;\(∂L/(∂x(k))\)&lt;/span&gt;是∂&lt;span class="math"&gt;\(L/∂x\)&lt;/span&gt;的第k分量&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h2&gt;&lt;strong&gt;背景知识&lt;/strong&gt;&lt;/h2&gt;
 &lt;h3&gt;&lt;strong&gt;语言模型及n-gram 模型&lt;/strong&gt;&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;语言模型：&lt;/strong&gt;&lt;br /&gt;
 统计式的语言模型是借由一个机率分布，而指派机率给字词所组成的字串：
- $$P(w_1,...,w_m)$$
+ &lt;div class="math"&gt;$$P(w_1,...,w_m)$$&lt;/div&gt;
 由此得到推论：
-$$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,w_{t−1})$$
+&lt;div class="math"&gt;$$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,w_{t−1})$$&lt;/div&gt;
 简单的讲就是看一串字词的组合有多大可能出现，换句话讲就是有没有可能是正常人类语言。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;N-gram模型：&lt;/strong&gt;&lt;br /&gt;
 语言的一种统计学模型为，根据已出现的词，得出下一个词出现的概率，即：
- $$\hat{p}(w_1^T)\prod_{t=1}^T \hat{p}(w_t|w_1^{t-1})$$
+ &lt;div class="math"&gt;$$\hat{p}(w_1^T)\prod_{t=1}^T \hat{p}(w_t|w_1^{t-1})$$&lt;/div&gt;
 在建立自然语言的统计学模型时，为简化问题，假设第t个词只与其前n-1个词有关，于是有：
- $$\hat{p}(w_t|w_1^{t-1})\approx \hat{p}(w_t|w_{t-n+1}^{t-1})$$
+ &lt;div class="math"&gt;$$\hat{p}(w_t|w_1^{t-1})\approx \hat{p}(w_t|w_{t-n+1}^{t-1})$$&lt;/div&gt;
 根据这个模型，通过对语料建立一个多项分布模型，采用最大似然估计，可以获得任意句子在该模型下出现的概率。
- $$p(w_i|w_1w_2...w_{i-1}) = \frac{C(w_1w_2...w_{i-1}w_i)}{C(w_1w_2...w_{i-1})}$$&lt;/p&gt;
+ &lt;div class="math"&gt;$$p(w_i|w_1w_2...w_{i-1}) = \frac{C(w_1w_2...w_{i-1}w_i)}{C(w_1w_2...w_{i-1})}$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;h3&gt;&lt;strong&gt;基本平滑算法&lt;/strong&gt;&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;回退Back-off&lt;/strong&gt;&lt;br /&gt;
@@ -327,16 +328,16 @@ $$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,
 &lt;p&gt;&lt;strong&gt;Good-Turing:&lt;/strong&gt;&lt;br /&gt;
     1、适用于评估大规模的数据
     2、相似点：
-    $pr(w)=(c(w)+1)&lt;em&gt;N(c(w)+1)/(|T|&lt;/em&gt;N(c(w)))$,
+    &lt;span class="math"&gt;\(pr(w)=(c(w)+1)*N(c(w)+1)/(|T|*N(c(w)))\)&lt;/span&gt;,
     其中：N(c)是数目为c的词的数量
-    特别：对于训练集中没有出现的词，$c(w)=0 pr(w)=N(1)/(|T|*N(0))$
+    特别：对于训练集中没有出现的词，&lt;span class="math"&gt;\(c(w)=0 pr(w)=N(1)/(|T|*N(0))\)&lt;/span&gt;
     有利于数量少的词语（&amp;lt;5-10, 但N(c)较大）
     “调富济贫”
-    归一化（可以得到$\lambda_i &amp;gt; 0, \sum_{i=0...n} \lambda_i = 1$）&lt;/p&gt;
+    归一化（可以得到&lt;span class="math"&gt;\(\lambda_i &amp;gt; 0, \sum_{i=0...n} \lambda_i = 1\)&lt;/span&gt;）&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;典型n-gram语言模型的平滑:&lt;/strong&gt; &lt;br /&gt;
- 1、采用$λ=(λ0,λ1,λ2,λ3)$ &lt;br&gt; 
+ 1、采用&lt;span class="math"&gt;\(λ=(λ0,λ1,λ2,λ3)\)&lt;/span&gt; &lt;br&gt; 
  2、归一化：
        $λi &amp;gt; 0, ∑_{(i=0…n)}λ_i=1 $&lt;br&gt;
 3、极大似然估计
@@ -352,7 +353,7 @@ $$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,
 4、返回2，除非遇到终止条件 &lt;br /&gt;
     终止条件为： λ收敛 
       简单设定一个ε，当step3中对每个j都有 
-      $|λj-λj ,next|&amp;lt; ε$时终止 
+      &lt;span class="math"&gt;\(|λj-λj ,next|&amp;lt; ε\)&lt;/span&gt;时终止 
  &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
@@ -361,49 +362,48 @@ $$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,
 &lt;center&gt; &lt;img alt="" src="http://cl.ly/YG5b/NN_note_basic.jpg" /&gt;
 图2神经网络模型&lt;/center&gt;
 如图2所示，中间红色Z为导出特征，也称隐藏层，有输入的线性组合创建Z，再用Z的线性组合建立以Y为目标的模型。
- $$Z_m = \sigma(\alpha_{0m} + \alpha_m^TX),m=1,...,M$$
- $$T_k = \beta_{0k} + \beta_k^TZ, k=1,...,K$$
- $$f_k(X) = g_k(T), k=1,...,K$$
-激活函数$σ（ע）=exp(y)/(1+exp(y))=1/(1+exp(-y))$ 
+ &lt;div class="math"&gt;$$Z_m = \sigma(\alpha_{0m} + \alpha_m^TX),m=1,...,M$$&lt;/div&gt;
+&lt;div class="math"&gt;$$T_k = \beta_{0k} + \beta_k^TZ, k=1,...,K$$&lt;/div&gt;
+&lt;div class="math"&gt;$$f_k(X) = g_k(T), k=1,...,K$$&lt;/div&gt;
+激活函数&lt;span class="math"&gt;\(σ（ע）=exp(y)/(1+exp(y))=1/(1+exp(-y))\)&lt;/span&gt; 
 输出函数g_k (T)是对向量T的最终变换，早期K分类采用恒等函数，后来被softmax函数取代，因其可以产生和为1的正估计：
- $$g_k(T) = \frac{e^{T_k}}{\sum_{\epsilon=1}^{K}e^{T_\epsilon}}$$&lt;/p&gt;
+ &lt;div class="math"&gt;$$g_k(T) = \frac{e^{T_k}}{\sum_{\epsilon=1}^{K}e^{T_\epsilon}}$$&lt;/div&gt;
+&lt;/p&gt;
 &lt;h3&gt;&lt;strong&gt;Training of Neural Networks&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;未知参数称为权，用$\theta$表示权的全集 
+&lt;p&gt;未知参数称为权，用&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;表示权的全集 
 对于回归和分类问题，我们分别使用误差的平方和，平方误差或互熵（离散）作为拟合的度量 
- $${\alpha_{0m},\alpha_m;m=1,2,...,M} M(p+1) weights$$
- $${\beta_{0k},\beta_k;k=1,2,...,K} K(M+1) weights$$
- $$R(\theta) = \sum_{k=1}^K \sum_{i=1}^{N}(y_{ik}-f_k(x_i))^2$$
-  $$R(\theta) = - \sum_{i=1}^N \sum_{k=1}^{K}(y_{ik}-\log f_k(x_i))$$&lt;/p&gt;&lt;script type= "text/javascript"&gt;
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-&lt;/script&gt;
-</summary><category term="NLP"></category><category term="Neural Network"></category><category term="Bengio"></category></entry><entry><title>Corona 笔记</title><link href="http://www.liustrive.com/pages/2013/05/12/corona-bi-ji.html" rel="alternate"></link><updated>2013-05-12T12:19:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2013-05-12:pages/2013/05/12/corona-bi-ji.html</id><summary type="html">&lt;h3&gt;Corona 初探&lt;/h3&gt;
+ &lt;div class="math"&gt;$$\{\alpha_{0m},\alpha_m;m=1,2,...,M\} M(p+1) weights$$&lt;/div&gt;
+&lt;div class="math"&gt;$$\{\beta_{0k},\beta_k;k=1,2,...,K\} K(M+1) weights$$&lt;/div&gt;
+&lt;div class="math"&gt;$$R(\theta) = \sum_{k=1}^K \sum_{i=1}^{N}(y_{ik}-f_k(x_i))^2$$&lt;/div&gt;
+&lt;div class="math"&gt;$$R(\theta) = - \sum_{i=1}^N \sum_{k=1}^{K}(y_{ik}-\log f_k(x_i))$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="NLP"></category><category term="Neural Network"></category><category term="Bengio"></category></entry><entry><title>Corona 笔记</title><link href="http://www.liustrive.com/pages/2013/05/12/corona-bi-ji.html" rel="alternate"></link><updated>2013-05-12T12:19:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2013-05-12:pages/2013/05/12/corona-bi-ji.html</id><summary type="html">&lt;h3&gt;Corona 初探&lt;/h3&gt;
 &lt;p&gt;本周关注了一下另一种号称下一代MapReduce的框架：&lt;strong&gt;Corona&lt;/strong&gt;。它是facebook的开源框架，代码在：&lt;/p&gt;
 &lt;p&gt;&lt;a href="https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona"&gt;https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona&lt;/a&gt; &lt;/p&gt;
 &lt;p&gt;Cornna的设计需求与Apache的YARN框架十分相似，它的发布文档：&lt;/p&gt;

@@ -75,35 +75,38 @@ by <a class="url fn" href="../author/leon.html">Leon</a>
 文中提到词向量表示的一大弊端是它们无法表示一些词组成的常用短语，这短语不是字面上把其组成词连接起来的意义，于是提出扩展，将基于词的模型变成基于短语的模型，扩展的原理是先抓出这些短语，然后把这些短语作为整体的“词”加入训练集，然后使用上文实验部分中提到的方法，利用词向量代数运算验证准确性。</p>
 <h4><strong>The Skip-gram Model</strong></h4>
 <p>上文介绍过skip-gram模型的结构，给定一句由训练词{w1,w2,w3…wT}，其目标是最大化平均对数概率，c为目标词的前后上下文长度
- $$\frac{1}{T}\sum_{t=1}^T \sum_{-c\leq j \leq c, j\neq0} \log p(w_{t+j}|w_t)$$
-其中，$p(w_{t+j} | w_t)$ 用softmax函数计算：
- $$\hat{p}(w_t|w_{t-1},...,w_{t-n+1}) = \frac{e^{y_{w_t}}}{\sum_i e^{y_i}}$$<br />
+ <div class="math">$$\frac{1}{T}\sum_{t=1}^T \sum_{-c\leq j \leq c, j\neq0} \log p(w_{t+j}|w_t)$$</div>
+其中，<span class="math">\(p(w_{t+j} | w_t)\)</span> 用softmax函数计算：
+ <div class="math">$$\hat{p}(w_t|w_{t-1},...,w_{t-n+1}) = \frac{e^{y_{w_t}}}{\sum_i e^{y_i}}$$</div>
+<br />
 即：
- $$p(w_O| w_I) = \frac{exp({v'}<em w_I="w_I">{w_O} {}^{\mathrm{T}} v</em>)}{\sum_{w=1}^W exp(v'<em w_I="w_I">w {}^{\mathrm{T}}v</em>)}$$  </p>
+ <div class="math">$$p(w_O| w_I) = \frac{exp({v'}_{w_O} {}^{\mathrm{T}} v_{w_I})}{\sum_{w=1}^W exp(v'_w {}^{\mathrm{T}}v_{w_I})}$$</div>
+</p>
 <h4><strong>Hierarchical Softmax</strong></h4>
 <p>Hierarchical Softmax是full softmax的一种计算量优化，其目标是减少计算：<br />
-$$p(A|C) = \frac{e^{-E(A,C)}}{\sum_{v=1}^V e^{-E(wv,C)}}$$
+<div class="math">$$p(A|C) = \frac{e^{-E(A,C)}}{\sum_{v=1}^V e^{-E(wv,C)}}$$</div>
 时所需的巨大计算量，使其运算量从计算|V|个输出节点变成log|V|
 其推导过程如下：<br />
 <center><img alt="" src="http://cl.ly/YFsO/cbow-exp_2_1.jpg" /></center></p>
 <h4><strong>Negative Sampling</strong></h4>
 <p>文章提出一种代替hierarchical softmax的方法（NCE），NCE能够求出softmax的对数概率函数近似最大，由于skip-gram模型只关心词向量的质量，所以在保证词向量准确性的条件下，还可以进一步简化NCE，文章定义了NCG方法：
 每个$\log p(W_O | W_I) $的运算被下式替代：<br />
-$$\log \sigma ({v'}<em w_I="w_I">{w_O} {}^{\mathrm{T}}v</em>) + \sum_{i=1}^{k} E_{w_i \sim P_n(w)}\log \sigma(-{v'}<em w_I="w_I">{w_i} {}^{\mathrm{T}}v</em>)]$$<br />
+<div class="math">$$\log \sigma ({v'}_{w_O} {}^{\mathrm{T}}v_{w_I}) + \sum_{i=1}^{k} E_{w_i \sim P_n(w)}\log \sigma(-{v'}_{w_i} {}^{\mathrm{T}}v_{w_I})]$$</div>
+<br />
 其中k是为每个数据样本选用k个负类样本，在小的数据集时可以取5-20，大的数据集甚至取2-5就够用，Negative sampling 和NCE的主要区别是NCE同时需要样本和噪声分布的数值概率 ？  </p>
 <h4><strong>Subsampling of Frequent Words</strong></h4>
 <p>在大型的语料中，一些词会有非常高的词频，比如the, a , in 这种类型词，但是这种高频词往往比一些低频词提供更少的有效信息，所以为了逆转这种不平衡性，文章提出一种二次抽样方法：<br />
- $$P(w_i) = 1-\sqrt{\frac{t}{f(w_i)}}$$
-其中$f(w_i)$是词$w_i$的词频，t是预设的阈值，词频高于t的$w_i$ 具有$P(w_i)$的概率被抛弃。</p>
+<div class="math">$$P(w_i) = 1-\sqrt{\frac{t}{f(w_i)}}$$</div>
+其中<span class="math">\(f(w_i)\)</span>是词<span class="math">\(w_i\)</span>的词频，t是预设的阈值，词频高于t的<span class="math">\(w_i\)</span> 具有<span class="math">\(P(w_i)\)</span>的概率被抛弃。</p>
 <h3><strong>实验部分：</strong></h3>
 <h4><strong>传统的实验</strong></h4>
 <p>这篇文章的实验任务也采用上文的代数运算准确率衡量，实验描述参见上文Task description 
 文中实验Skip-gram采用10亿数据量的数据集，抛弃词频少于5次的词，实验结果如图Table1
  <center><img alt="" src="http://cl.ly/YFvs/cbow-exp_2_2.jpg" /></center>  </p>
-<p>可以观察到Negative Sampling准确率高于HS算法，比原版的NCE也有少许提升，同时观察到以$10^{-5}$为阈值二次采样过滤后，大幅缩短了训练时间，同时少量提升了词向量准确度。</p>
+<p>可以观察到Negative Sampling准确率高于HS算法，比原版的NCE也有少许提升，同时观察到以<span class="math">\(10^{-5}\)</span>为阈值二次采样过滤后，大幅缩短了训练时间，同时少量提升了词向量准确度。</p>
 <h4><strong>短语实验</strong></h4>
 <p>上文提到过，一些由词组成的固定短语并不是其字面意义，于是作者抓出这些固定短句，并以其为整体加入词库而不是拆分成单个的词，抓出这些词的具体方法是：<br />
-$$score(w_i,w_j) = \frac{count(w_i,w_j)-\delta}{count(w_i)\times count(w_j)}$$
+<div class="math">$$score(w_i,w_j) = \frac{count(w_i,w_j)-\delta}{count(w_i)\times count(w_j)}$$</div>
 基本上就是词以固定形式出现的次数减去一个折扣系数与他们各自出现频率的比值，已决定这个短语的权值，最后权值超过预设的阈值的短语被取出作为固定短语，文中实验采用递降的阈值对训练集跑了2-4次这样的取短语操作，使长固定短语也能被抓出<br />
 <center><img alt="" src="http://cl.ly/YGDD/cbow-exp_2_3.jpg" /></center></p>
 <p>这里具体怎么个2-4次法，前次的输出作为后次的数据集还是什么，文中没说清。</p>
@@ -117,37 +120,34 @@ $$score(w_i,w_j) = \frac{count(w_i,w_j)-\delta}{count(w_i)\times count(w_j)}$$
 <p>文章最后还讨论了词向量的加法语义合成，如Table4所示：<br />
  <center><img alt="" src="http://cl.ly/YGCO/cbow-exp_2_5.jpg" /></center><br />
 词向量加法能得到与相加的两词语义最接近的词或短语，这主要是因为在训练过程中，相加的两词有更大可能与结果短语或词在同一句中，比如“中国”+“首都”= “北京”</p>
-<p>文章最后横向与相近工作的其它模型做了比较，比较训练时间以及词向量的准确率，结果表明Skip-gram phrase model 具有最快的训练时间（随着数据集规模的增长只有少量时间增加）和很好的准确性。</p><script type= "text/javascript">
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-</script>
-</div>
+<p>文章最后横向与相近工作的其它模型做了比较，比较训练时间以及词向量的准确率，结果表明Skip-gram phrase model 具有最快的训练时间（随着数据集规模的增长只有少量时间增加）和很好的准确性。</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
         <hr />
     </div>
 		
@@ -176,38 +176,8 @@ by <a class="url fn" href="../author/leon.html">Leon</a>
 <p>此即前文所述前向神经网络语言模型，采用四层神经网络（原文讲实际是三层神经网络）
 输入层、投影层、隐藏层、输出层
 每个训练样本的计算复杂度为：
-$$Q = N × D + N × D × H + H × V$$
-其中，N为n-gram模型中n值，D为词向量维度，H是隐藏层size（通常500-1000），V是词表大小，同时也是输出层的节点数量，N<em>D为输入层到投影层权重个数，H</em>V表示隐藏层到输出层的权重个数，N<em>D ...</em></p><script type= "text/javascript">
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-</script>
- <a class="btn btn-info xsmall" href="../pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html">read more</a></div>
+<div class="math">$$Q = N × D + N × D × H + H × V$$</div>
+其中，N为n-gram模型中n值，D为词向量维度，H是隐藏层size（通常500-1000），V是词表大小，同时也是输出层的节点数量，N<em>D为输入层到投影层权重个数，H</em>V表示隐藏层到输出层的权重个数，N<em>D ...</em></p> <a class="btn btn-info xsmall" href="../pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

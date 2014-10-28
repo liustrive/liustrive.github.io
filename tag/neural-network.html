@@ -110,29 +110,31 @@ A dog was running in a room</p>
 <p>训练集:
 sequence w1…wT ，其中的词wt 属于于很大的有限集词表V
 目标模型： 
-$$f(w_t,...,w_{t=n+1}) = \hat{P}(w_t | w_1^{t-1})$$
+<div class="math">$$f(w_t,...,w_{t=n+1}) = \hat{P}(w_t | w_1^{t-1})$$</div>
 将目标分解为两部分：
 <center> <img alt="" src="http://cl.ly/YFku/NNLM.jpg" /><br />
 图1 三层神经网络</center></p>
 <ol>
 <li>将词表中的元素i映射为distributed feature vectors，即特征向量C(i)，C是一个|V|*m的矩阵，m为特征向量维数，C(i)为C中一行;</li>
-<li>根据上下文生成的概率分布函数g，其输入为前n词的 (C(wt−n+1),••• ,C(wt−1))，输出为一个向量，其第i的元素表示 $\hat{P}(w_t = i|w_1^{t-1})$
-$$f(i,w_{t-1},...,w_{t-1-n+1} = g(i,C(w_{t-1},...,C(w_{t-n+1})))$$</li>
+<li>根据上下文生成的概率分布函数g，其输入为前n词的 (C(wt−n+1),••• ,C(wt−1))，输出为一个向量，其第i的元素表示 <span class="math">\(\hat{P}(w_t = i|w_1^{t-1})\)</span>
+<div class="math">$$f(i,w_{t-1},...,w_{t-1-n+1} = g(i,C(w_{t-1},...,C(w_{t-n+1})))$$</div>
+</li>
 </ol>
-<p>函数f由两个映射关系g和C构成，C的参数就是|V|<em>m矩阵表示的词特征向量，w到C(w)的映射表示从矩阵C取出一行，C和g的参数 $θ= (C,ω)$ 构成模型需要学习的参数集，训练的过程是寻找能够使训练语料的penalized log-likelihood最大的$θ$，学习过程中参数数量和词表大小、上下文数量n成线性关系。
- $$L=\frac{1}{T}\sum_t log f(w_t,w_{t-1},...,w_{t-n+1};\theta)+ R(\theta)$$
+<p>函数f由两个映射关系g和C构成，C的参数就是|V|<em>m矩阵表示的词特征向量，w到C(w)的映射表示从矩阵C取出一行，C和g的参数 <span class="math">\(θ= (C,ω)\)</span> 构成模型需要学习的参数集，训练的过程是寻找能够使训练语料的penalized log-likelihood最大的<span class="math">\(θ\)</span>，学习过程中参数数量和词表大小、上下文数量n成线性关系。
+ <div class="math">$$L=\frac{1}{T}\sum_t log f(w_t,w_{t-1},...,w_{t-n+1};\theta)+ R(\theta)$$</div>
 文中使用的实际包含一个隐藏层的神经网络进行训练，输出层共|V|个节点, 采用softmax激活函数将y归一化成概率公式：
- $$\hat{P}(w_t|w_{t-1},...,w_{t-n+1}) = \frac{e^{y_{w_t}}}{\sum_i e^{y_i}}$$
+ <div class="math">$$\hat{P}(w_t|w_{t-1},...,w_{t-n+1}) = \frac{e^{y_{w_t}}}{\sum_i e^{y_i}}$$</div>
 </em>注：此处公式参见背景知识：神经网络*</p>
-<p>其中，$y_i$ 为下一个词为i的未归一化log概率，隐藏层使用d+Hx得到d为偏置项，具有参数b,W,U,d,H： 
- $$y=b+Wx+U tanh(d+Hx)$$
+<p>其中，<span class="math">\(y_i\)</span> 为下一个词为i的未归一化log概率，隐藏层使用d+Hx得到d为偏置项，具有参数b,W,U,d,H： 
+ <div class="math">$$y=b+Wx+U tanh(d+Hx)$$</div>
 输入层x为将C(wt−1),C(wt−2),••• ,C(wt−n+1)这些向量首尾相连形成的（n-1）m维向量：
- $$x=(C(w_{t-1}),C(w_{t-2}),...,C(w_{t-n+1}))$$
+ <div class="math">$$x=(C(w_{t-1}),C(w_{t-2}),...,C(w_{t-n+1}))$$</div>
 于是需要训练的参数集合为：
- $$\theta = (b,d,W,U,H,C)$$
+ <div class="math">$$\theta = (b,d,W,U,H,C)$$</div>
 其中，U为一个|V|<em>h矩阵，表示隐藏层到输出层的参数，矩阵W为一个|V|</em>（n-1）m的矩阵，包含了输入层到输出层的直连边，（参见图1中虚线以及正文末算法）。</p>
 <p>最后通过随机梯度下降法(SGD)优化模型，最终获得词向量和语言模型。
- $$\theta \leftarrow \theta +  \varepsilon\frac{\partial log\hat{P}(w_t|w_{t-1},...,w_{t-n+1})}{\partial \theta}$$</p>
+ <div class="math">$$\theta \leftarrow \theta +  \varepsilon\frac{\partial log\hat{P}(w_t|w_{t-1},...,w_{t-n+1})}{\partial \theta}$$</div>
+</p>
 <h2><strong>Parallel Implementation</strong></h2>
 <p>虽然前文提到本文模型参数增长为线性增长，但由于采用n-gram模型时，计算P(wt|wt−1,...,wt−n+1) 时并不需要计算词表中每一个词的概率，神经网络模型所需的计算量远大于n-gram模型。
 有关并行处理，在共享内存多处理机上文中算法实现首先采用每个处理器处理一部分子数据集，update模型的参数时需要等待资源锁，结果导致大部分CPU周期用来等待其它处理器释放参数的写锁；文章随后采用了异步实现，任何处理器任何时间都可以写共享内存，这样的实现会导致一些处理器update的参数被其它处理器写线程覆盖，但是实验表明这种noise不会降低训练速度。
@@ -144,80 +146,81 @@ $$f(i,w_{t-1},...,w_{t-1-n+1} = g(i,C(w_{t-1},...,C(w_{t-n+1})))$$</li>
 </ul>
 <p>对于单一训练样本，假设有词表数|V|，隐藏单元h，词序n，词特征项m，则计算复杂度为： |V|(1+nm+h)+h(1+nm)+nm
 单一训练样本复杂度除以计算weighted sums of output units复杂度得到：
- $$\frac{|V|(1+(n-1)m+h)}{|V|(1+(n-1)m+h)+h(1+(n-1)m)+(n-1)m}$$
+ <div class="math">$$\frac{|V|(1+(n-1)m+h)}{|V|(1+(n-1)m+h)+h(1+(n-1)m)+(n-1)m}$$</div>
 可知总体上将输出单元计算并行化是有优势的。</p>
 <h2><strong>BP part</strong></h2>
 <p><strong>Forward phase，前向计算：</strong><br />
 1. 为词特征层前向计算  </p>
 <blockquote>
-<p>$x(k) \leftarrow C(w_{t-k})$<br />
-  $x=(x(1),x(2),...,x(n-1))$  </p>
+<p><span class="math">\(x(k) \leftarrow C(w_{t-k})\)</span><br />
+<span class="math">\(x=(x(1),x(2),...,x(n-1))\)</span>  </p>
 </blockquote>
 <p>2. 为隐藏层前向计算，d是偏置项，激活函数tanh  </p>
 <blockquote>
-<p>$o \leftarrow d + Hx$<br />
-   $a \leftarrow tanh(o)$  </p>
+<p><span class="math">\(o \leftarrow d + Hx\)</span><br />
+<span class="math">\(a \leftarrow tanh(o)\)</span>  </p>
 </blockquote>
 <p>3. 为第i个块内输出做前向计算  </p>
 <blockquote>
-<p>$s_i \leftarrow 0$<br />
+<p><span class="math">\(s_i \leftarrow 0\)</span><br />
    for each j in i-th block<br />
-  　$y_j \leftarrow b_j + a.U_j$<br />
+<span class="math">\(y_j \leftarrow b_j + a.U_j\)</span><br />
   　if( direct connections) <br />
-  　　$y_j \leftarrow y_j + x.W_j$  <br />
-  　$p_j \leftarrow e^{y_j}$<br />
-  　$S_i \leftarrow S_i + p_j$   </p>
+<span class="math">\(y_j \leftarrow y_j + x.W_j\)</span>  <br />
+<span class="math">\(p_j \leftarrow e^{y_j}\)</span><br />
+<span class="math">\(S_i \leftarrow S_i + p_j\)</span>   </p>
 </blockquote>
-<p>$S=∑_i s_i$，此计算需在所有处理器间共享$S_i$</p>
+<p><span class="math">\(S=∑_i s_i\)</span>，此计算需在所有处理器间共享<span class="math">\(S_i\)</span></p>
 <p>4. 正规化概率</p>
 <blockquote>
 <p>对第i块内输出以j为下标循环<br />
-$p_j \leftarrow p_j/S$</p>
+<span class="math">\(p_j \leftarrow p_j/S\)</span></p>
 </blockquote>
 <p>5. 更新对数似然函数</p>
-<p>$$$$<strong>Backward/update phase 后向计算/更新阶段</strong><br />
+<p><span class="math">\($\)</span>$<strong>Backward/update phase 后向计算/更新阶段</strong><br />
 1. 清空梯度向量∂L/∂a，∂L/∂x</p>
 <blockquote>
 <p>对第i个块内以j为下标循环<br />
-  　$\frac{\partial L}{\partial y_j} \leftarrow 1_{j==w_t - p_j}$<br />
- 　$b_j \leftarrow b_j + \varepsilon \frac{\partial L}{\partial y_j}$<br />
+<span class="math">\(\frac{\partial L}{\partial y_j} \leftarrow 1_{j==w_t - p_j}\)</span><br />
+<span class="math">\(b_j \leftarrow b_j + \varepsilon \frac{\partial L}{\partial y_j}\)</span><br />
  　If(direct connections)<br />
- 　　$ \frac{\partial L}{\partial x} \leftarrow \frac{\partial L}{\partial x} + \frac{\partial L}{\partial y_j}W_j$<br />
-　$ \frac{\partial L}{\partial a} \leftarrow \frac{\partial L}{\partial a} + \frac{\partial L}{\partial y_j}W_j$<br />
+<span class="math">\( \frac{\partial L}{\partial x} \leftarrow \frac{\partial L}{\partial x} + \frac{\partial L}{\partial y_j}W_j\)</span><br />
+<span class="math">\( \frac{\partial L}{\partial a} \leftarrow \frac{\partial L}{\partial a} + \frac{\partial L}{\partial y_j}W_j\)</span><br />
 　If(direct connection)<br />
-　　$W_j \leftarrow W_j + \varepsilon\frac{\partial L}{\partial y_j}x$<br />
-　$U_j \leftarrow U_j + \varepsilon\frac{\partial L}{\partial y_j}x$  </p>
+<span class="math">\(W_j \leftarrow W_j + \varepsilon\frac{\partial L}{\partial y_j}x\)</span><br />
+<span class="math">\(U_j \leftarrow U_j + \varepsilon\frac{\partial L}{\partial y_j}x\)</span>  </p>
 </blockquote>
-<p>2. 对$\frac{\partial L}{\partial a}, \frac{\partial L}{\partial x}$求和并在所有处理器上共享<br />
+<p>2. 对<span class="math">\(\frac{\partial L}{\partial a}, \frac{\partial L}{\partial x}\)</span>求和并在所有处理器上共享<br />
 3. 后向传播并更新隐藏层权重  </p>
 <blockquote>
 <p>k由1到h<br />
-　$\frac{\partial L}{\partial o_k} \leftarrow (1 -a_k^2)\frac{\partial L}{\partial a_k}$<br />
-　$\frac{\partial L}{\partial x} \leftarrow \frac{\partial L}{\partial x} + H'\frac{\partial L}{\partial o}$<br />
-　$d \leftarrow d + \varepsilon \frac{\partial L }{\partial o}$<br />
-　$H \leftarrow H + \varepsilon \frac{\partial L }{\partial o}x'$  </p>
+<span class="math">\(\frac{\partial L}{\partial o_k} \leftarrow (1 -a_k^2)\frac{\partial L}{\partial a_k}\)</span><br />
+<span class="math">\(\frac{\partial L}{\partial x} \leftarrow \frac{\partial L}{\partial x} + H'\frac{\partial L}{\partial o}\)</span><br />
+<span class="math">\(d \leftarrow d + \varepsilon \frac{\partial L }{\partial o}\)</span><br />
+<span class="math">\(H \leftarrow H + \varepsilon \frac{\partial L }{\partial o}x'\)</span>  </p>
 </blockquote>
 <p>4. 为输入更新此特征向量  </p>
 <blockquote>
-<p>$K ∈ (1,n-1)$<br />
-$C(w_{t-k} \leftarrow C(w_{t-k}) + \varepsilon \frac{\partial L}{\partial x(k)})$<br />
- 其中$∂L/(∂x(k))$是∂$L/∂x$的第k分量</p>
+<p><span class="math">\(K ∈ (1,n-1)\)</span><br />
+<span class="math">\(C(w_{t-k} \leftarrow C(w_{t-k}) + \varepsilon \frac{\partial L}{\partial x(k)})\)</span><br />
+ 其中<span class="math">\(∂L/(∂x(k))\)</span>是∂<span class="math">\(L/∂x\)</span>的第k分量</p>
 </blockquote>
 <h2><strong>背景知识</strong></h2>
 <h3><strong>语言模型及n-gram 模型</strong></h3>
 <p><strong>语言模型：</strong><br />
 统计式的语言模型是借由一个机率分布，而指派机率给字词所组成的字串：
- $$P(w_1,...,w_m)$$
+ <div class="math">$$P(w_1,...,w_m)$$</div>
 由此得到推论：
-$$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,w_{t−1})$$
+<div class="math">$$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,w_{t−1})$$</div>
 简单的讲就是看一串字词的组合有多大可能出现，换句话讲就是有没有可能是正常人类语言。</p>
 <p><strong>N-gram模型：</strong><br />
 语言的一种统计学模型为，根据已出现的词，得出下一个词出现的概率，即：
- $$\hat{p}(w_1^T)\prod_{t=1}^T \hat{p}(w_t|w_1^{t-1})$$
+ <div class="math">$$\hat{p}(w_1^T)\prod_{t=1}^T \hat{p}(w_t|w_1^{t-1})$$</div>
 在建立自然语言的统计学模型时，为简化问题，假设第t个词只与其前n-1个词有关，于是有：
- $$\hat{p}(w_t|w_1^{t-1})\approx \hat{p}(w_t|w_{t-n+1}^{t-1})$$
+ <div class="math">$$\hat{p}(w_t|w_1^{t-1})\approx \hat{p}(w_t|w_{t-n+1}^{t-1})$$</div>
 根据这个模型，通过对语料建立一个多项分布模型，采用最大似然估计，可以获得任意句子在该模型下出现的概率。
- $$p(w_i|w_1w_2...w_{i-1}) = \frac{C(w_1w_2...w_{i-1}w_i)}{C(w_1w_2...w_{i-1})}$$</p>
+ <div class="math">$$p(w_i|w_1w_2...w_{i-1}) = \frac{C(w_1w_2...w_{i-1}w_i)}{C(w_1w_2...w_{i-1})}$$</div>
+</p>
 <h3><strong>基本平滑算法</strong></h3>
 <ul>
 <li><strong>回退Back-off</strong><br />
@@ -238,16 +241,16 @@ $$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,
 <p><strong>Good-Turing:</strong><br />
     1、适用于评估大规模的数据
     2、相似点：
-    $pr(w)=(c(w)+1)<em>N(c(w)+1)/(|T|</em>N(c(w)))$,
+    <span class="math">\(pr(w)=(c(w)+1)*N(c(w)+1)/(|T|*N(c(w)))\)</span>,
     其中：N(c)是数目为c的词的数量
-    特别：对于训练集中没有出现的词，$c(w)=0 pr(w)=N(1)/(|T|*N(0))$
+    特别：对于训练集中没有出现的词，<span class="math">\(c(w)=0 pr(w)=N(1)/(|T|*N(0))\)</span>
     有利于数量少的词语（&lt;5-10, 但N(c)较大）
     “调富济贫”
-    归一化（可以得到$\lambda_i &gt; 0, \sum_{i=0...n} \lambda_i = 1$）</p>
+    归一化（可以得到<span class="math">\(\lambda_i &gt; 0, \sum_{i=0...n} \lambda_i = 1\)</span>）</p>
 </li>
 <li>
 <p><strong>典型n-gram语言模型的平滑:</strong> <br />
- 1、采用$λ=(λ0,λ1,λ2,λ3)$ <br> 
+ 1、采用<span class="math">\(λ=(λ0,λ1,λ2,λ3)\)</span> <br> 
  2、归一化：
        $λi &gt; 0, ∑_{(i=0…n)}λ_i=1 $<br>
 3、极大似然估计
@@ -263,7 +266,7 @@ $$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,
 4、返回2，除非遇到终止条件 <br />
     终止条件为： λ收敛 
       简单设定一个ε，当step3中对每个j都有 
-      $|λj-λj ,next|&lt; ε$时终止 
+      <span class="math">\(|λj-λj ,next|&lt; ε\)</span>时终止 
  </p>
 </li>
 </ul>
@@ -272,49 +275,48 @@ $$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,
 <center> <img alt="" src="http://cl.ly/YG5b/NN_note_basic.jpg" />
 图2神经网络模型</center>
 如图2所示，中间红色Z为导出特征，也称隐藏层，有输入的线性组合创建Z，再用Z的线性组合建立以Y为目标的模型。
- $$Z_m = \sigma(\alpha_{0m} + \alpha_m^TX),m=1,...,M$$
- $$T_k = \beta_{0k} + \beta_k^TZ, k=1,...,K$$
- $$f_k(X) = g_k(T), k=1,...,K$$
-激活函数$σ（ע）=exp(y)/(1+exp(y))=1/(1+exp(-y))$ 
+ <div class="math">$$Z_m = \sigma(\alpha_{0m} + \alpha_m^TX),m=1,...,M$$</div>
+<div class="math">$$T_k = \beta_{0k} + \beta_k^TZ, k=1,...,K$$</div>
+<div class="math">$$f_k(X) = g_k(T), k=1,...,K$$</div>
+激活函数<span class="math">\(σ（ע）=exp(y)/(1+exp(y))=1/(1+exp(-y))\)</span> 
 输出函数g_k (T)是对向量T的最终变换，早期K分类采用恒等函数，后来被softmax函数取代，因其可以产生和为1的正估计：
- $$g_k(T) = \frac{e^{T_k}}{\sum_{\epsilon=1}^{K}e^{T_\epsilon}}$$</p>
+ <div class="math">$$g_k(T) = \frac{e^{T_k}}{\sum_{\epsilon=1}^{K}e^{T_\epsilon}}$$</div>
+</p>
 <h3><strong>Training of Neural Networks</strong></h3>
-<p>未知参数称为权，用$\theta$表示权的全集 
+<p>未知参数称为权，用<span class="math">\(\theta\)</span>表示权的全集 
 对于回归和分类问题，我们分别使用误差的平方和，平方误差或互熵（离散）作为拟合的度量 
- $${\alpha_{0m},\alpha_m;m=1,2,...,M} M(p+1) weights$$
- $${\beta_{0k},\beta_k;k=1,2,...,K} K(M+1) weights$$
- $$R(\theta) = \sum_{k=1}^K \sum_{i=1}^{N}(y_{ik}-f_k(x_i))^2$$
-  $$R(\theta) = - \sum_{i=1}^N \sum_{k=1}^{K}(y_{ik}-\log f_k(x_i))$$</p><script type= "text/javascript">
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
-</script>
-</div>
+ <div class="math">$$\{\alpha_{0m},\alpha_m;m=1,2,...,M\} M(p+1) weights$$</div>
+<div class="math">$$\{\beta_{0k},\beta_k;k=1,2,...,K\} K(M+1) weights$$</div>
+<div class="math">$$R(\theta) = \sum_{k=1}^K \sum_{i=1}^{N}(y_{ik}-f_k(x_i))^2$$</div>
+<div class="math">$$R(\theta) = - \sum_{i=1}^N \sum_{k=1}^{K}(y_{ik}-\log f_k(x_i))$$</div>
+</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script></div>
         <hr />
     </div>
 		
