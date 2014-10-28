@@ -209,7 +209,37 @@ $$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,
  $${\alpha_{0m},\alpha_m;m=1,2,...,M} M(p+1) weights$$
  $${\beta_{0k},\beta_k;k=1,2,...,K} K(M+1) weights$$
  $$R(\theta) = \sum_{k=1}^K \sum_{i=1}^{N}(y_{ik}-f_k(x_i))^2$$
-  $$R(\theta) = - \sum_{i=1}^N \sum_{k=1}^{K}(y_{ik}-\log f_k(x_i))$$&lt;/p&gt;</summary><category term="NLP"></category><category term="Neural Network"></category><category term="Bengio"></category></entry><entry><title>Corona 笔记</title><link href="http://www.liustrive.com/pages/2013/05/12/corona-bi-ji.html" rel="alternate"></link><updated>2013-05-12T12:19:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2013-05-12:pages/2013/05/12/corona-bi-ji.html</id><summary type="html">&lt;h3&gt;Corona 初探&lt;/h3&gt;
+  $$R(\theta) = - \sum_{i=1}^N \sum_{k=1}^{K}(y_{ik}-\log f_k(x_i))$$&lt;/p&gt;&lt;script type= "text/javascript"&gt;
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+&lt;/script&gt;
+</summary><category term="NLP"></category><category term="Neural Network"></category><category term="Bengio"></category></entry><entry><title>Corona 笔记</title><link href="http://www.liustrive.com/pages/2013/05/12/corona-bi-ji.html" rel="alternate"></link><updated>2013-05-12T12:19:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2013-05-12:pages/2013/05/12/corona-bi-ji.html</id><summary type="html">&lt;h3&gt;Corona 初探&lt;/h3&gt;
 &lt;p&gt;本周关注了一下另一种号称下一代MapReduce的框架：&lt;strong&gt;Corona&lt;/strong&gt;。它是facebook的开源框架，代码在：&lt;/p&gt;
 &lt;p&gt;&lt;a href="https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona"&gt;https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona&lt;/a&gt; &lt;/p&gt;
 &lt;p&gt;Cornna的设计需求与Apache的YARN框架十分相似，它的发布文档：&lt;/p&gt;
