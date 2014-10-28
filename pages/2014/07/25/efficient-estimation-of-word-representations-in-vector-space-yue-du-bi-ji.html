@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>古董Leon</title>
+    <meta name="description" content="">
+    <meta name="author" content="Leon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="../../../../theme/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="navbar-inner">
+    <div class="container">
+
+         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+         </a>
+
+        <a class="brand" href="../../../..">古董Leon</a>
+
+        <div class="nav-collapse">
+        <ul class="nav">
+            
+            <li><a href="../../../../pages/about.html">About</a></li>
+        </ul>
+<form class="navbar-search pull-right" action="/search.html">
+    <input type="text" class="search-query" placeholder="Search" name="q" id="s">
+</form>
+        </div>
+        
+    </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+    <div class="row">
+
+        <div class="span9">
+    <div class='article'>
+        <div class="content-title">
+            <h1>Efﬁcient Estimation of Word Representations in Vector Space 阅读笔记</h1>
+2014-07-25
+
+by <a class="url fn" href="../../../../author/leon.html">Leon</a>
+ 
+
+
+        </div>
+	
+        <div><h6>via: <a href="www.liustrive.com">liustrive.com</a></h6>
+<h4><strong>背景</strong></h4>
+<p>现有模型，比如前文Bengio的采用非线性激活函数tanh的神经网络模型，虽然准确度上有优势，但是算法的复杂度较高，无法训练更大的数据集，比如特征向量维度为50-100情况下训练超过几百兆个的语料。</p>
+<h4><strong>目标</strong></h4>
+<p>提出一种模型使其能够训练百万级词表下数十亿词量的训练集，并产出优质词特征向量。</p>
+<h4><strong>Model Architectures </strong></h4>
+<h5><strong>Feedforward Neural Net Language Model (NNLM)</strong></h5>
+<p>此即前文所述前向神经网络语言模型，采用四层神经网络（原文讲实际是三层神经网络）
+输入层、投影层、隐藏层、输出层
+每个训练样本的计算复杂度为：
+$$Q = N × D + N × D × H + H × V$$
+其中，N为n-gram模型中n值，D为词向量维度，H是隐藏层size（通常500-1000），V是词表大小，同时也是输出层的节点数量，N<em>D为输入层到投影层权重个数，H</em>V表示隐藏层到输出层的权重个数，N<em>D</em>H是投影层到隐藏层权重个数。<br />
+在文中的模型中，使用Huffman树来表示输出层hierarchical softmax，从而输出层参数从$H<em>V\rightarrow H</em>log(V)$。<br />
+但是这个提速并不能使神经网络语言模型获得决定性提升，因为计算瓶颈变成了N<em>D</em>H，于是提出了没有隐藏层的模型结构。</p>
+<h5><strong>recurrent neural net language model（RNNLM）</strong></h5>
+<p>递归神经网络语言模型没有投影层，只有输入层、隐藏层、输出层，该模型使用延时连接将隐藏层相连接，以使模型具有短期记忆，训练样本计算复杂度为：
+$Q = H × H + H × V$
+其中词向量与隐藏层维度都是H，这种模型也可以通过Huffman树表示输出层的方式提升效率</p>
+<h5><strong>New Log-linear Models</strong></h5>
+<p>前文提到，隐藏层计算复杂度成为性能瓶颈，作者观察到，隐藏层的非线性结构导致了需要大量的计算，虽然这种非线性结构更加精确，但是在这一节中作者介绍了两种模型，去除了隐藏层，并且分两步训练：1、计算词特征向量，2、在词特征向量基础上训练n-gram神经网络，以此大幅提升效率。</p>
+<h5><strong>Continuous Bag-of-Words Model</strong></h5>
+<p><center><img alt="" src="http://cl.ly/YFTh/CBOW.jpg" />  </center></p>
+<p>CBOW模型与前向神经网络模型相近，但是去除了隐藏层，所有词都通过加和平均投影到同一个D维向量上，训练的复杂度为：
+$$Q = N × D + D × \log_2(V)$$</p>
+<h5><strong>Continuous Skip-gram Model</strong></h5>
+<p><center><img alt="" src="http://cl.ly/YF8I/skip_gram.jpg" /></center>
+Skip-gram模型与CBOW模型相似，只不过后者根据上下文预测当前词，而前者根据当前词预测上下文可能存在的词，训练的计算复杂度为：
+$$Q = C × (D + D × \log_2(V ))$$
+其中C是词间最大距离</p>
+<h4><strong>实验部分</strong></h4>
+<p>作者表示中国相似法国相似意大利这种例子太没意思，前文也提到了训练产出的词向量具有（一定程度的）代数运算性质，于是文中设计了一系列实验，用代数运算的结果来验证模型的训练结果能否反映词之间的关系，并以此表示词向量的好坏。</p>
+<h5><strong>Task description</strong></h5>
+<p><center><img alt="" src="http://cl.ly/YFSt/cbow-exp.jpg" />
+作者采用的测试分类</center>
+作者设计了五类语义问题以及九类语法问题，比如男-女类 兄弟→姐妹 孙子→孙女，于是应该得到vector(“兄弟”) – vector(“姐妹”) + vector(“孙子”) = vector(“孙女”)
+通过验证这些类别中的词组是否得到正确的代数运算结果，衡量词向量的准确性</p>
+<h5><strong>Maximization of Accuracy</strong></h5>
+<p>本文实验采用的是Google News语料训练词向量，文中为了衡量模型什么样的输入和参数下最快时间内得到最好的训练产出，先采用一半的语料与一半的向量维度，再依次同步增加，结果如Table2
+ <center><img alt="" src="http://cl.ly/YG4E/cbow-exp2.jpg" /></center>
+可以通过结果观察到各在一定范围内，增加向量维度和增大训练集都能提升准确率，文中使用的学习速率为0.025.</p>
+<h5><strong>Comparison of Model Architectures</strong></h5>
+<p>模型间在相同维度和训练集大小情况下的比较结果，既采用了前文的代数运算方式统计准确性，也引入了通用的词间语法相似性的统计结果来反映词向量准确性。
+结果如Table4所示：<br />
+ <center><img alt="" src="http://cl.ly/YFJW/cbow-exp3.jpg" /></center><br />
+RNNLM效果最差，虽然NNLM的非线性隐藏层理论上提供更高的精确性，但是由于运算量限制了词向量维度和训练集大小，NNLM的效果仍然不如CBOW和Skip-gram（排名分先后）
+另外根据Table5的结果<br />
+<center><img alt="" src="http://cl.ly/YFkJ/cbow-exp4.jpg" /></center>
+3次迭代会提升准确度，但是影响不如其它因素那么大。  </p>
+<h5><strong>Large Scale Parallel Training of Models</strong></h5>
+<p>前文提到过，模型提出的目的就是能更快速的训练更大的语料，作者在分布式平台上实现了文中模型，用Google News的6B数据集做输入，实验结果如Table6：<br />
+<center><img alt="" src="http://cl.ly/YF2d/cbow-exp5.jpg" /></center></p>
+<p>可以发现CBOW和Skip-gram首先在速度上有绝对优势，NNLM甚至无法计算1000维词向量，准确性上也超过了NNLM模型。</p>
+<h5><strong>Microsoft Research Sentence Completion Challenge</strong></h5>
+<p>作者最后引入微软的句子补完测试，其内容是1040个句子，去掉其中一个词，提供五个词作为候选，目标是找出最合适的词使句子完整，文中使用的skip-gram模型测试，其准确率并不如LSA模型，但是结合RNNLM，通过加权平均，能使结果准确率提升到历史最高的58.9%。</p><script type= "text/javascript">
+    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+        var mathjaxscript = document.createElement('script');
+        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+        mathjaxscript.type = 'text/javascript';
+        mathjaxscript.src = 'https:' == document.location.protocol
+                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+            "MathJax.Hub.Config({" +
+            "    config: ['MMLorHTML.js']," +
+            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+            "    displayAlign: 'center'," +
+            "    displayIndent: '0em'," +
+            "    showMathMenu: true," +
+            "    tex2jax: { " +
+            "        inlineMath: [ ['$','$'] ], " +
+            "        displayMath: [ ['$$','$$'] ]," +
+            "        processEscapes: true," +
+            "        preview: 'TeX'," +
+            "    }, " +
+            "    'HTML-CSS': { " +
+            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+            "    } " +
+            "}); ";
+        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+    }
+</script>
+</div>
+	
+        <hr>
+
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'liustrive'; 
+    var disqus_title = 'Efﬁcient Estimation of Word Representations in Vector Space 阅读笔记';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+        </div>
+        
+        <div class="span3">
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Site
+                </li>
+            
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
+                <li><a href="http://www.liustrive.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Categories
+                </li>
+                
+                <li><a href="../../../../category/life.html">life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
+                   
+            </ul>
+            </div>
+
+
+
+
+            <div class="social">
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Social
+                </li>
+           
+                <li><a href="http://weibo.com/LiuLianZJU2SJTU">微博</a></li>
+                <li><a href="https://www.facebook.com/liustrive">Facebook</a></li>
+            </ul>
+            </div>
+            </div>
+
+        </div>  
+    </div>     </div> 
+<footer>
+<br />
+<p><a href="../../../..">古董Leon</a> &copy; Leon 2014</p>
+</footer>
+
+</div> <!-- /container -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
+<script>var _gaq=[['_setAccount','UA-50000386-1'],['_trackPageview']];(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s)}(document,'script'))</script>
+ 
+</body>
+</html>
