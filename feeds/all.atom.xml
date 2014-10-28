@@ -1,5 +1,215 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>古董Leon</title><link href="http://www.liustrive.com/" rel="alternate"></link><link href="http://www.liustrive.com/feeds%5Call.atom.xml" rel="self"></link><id>http://www.liustrive.com/</id><updated>2013-05-12T12:19:00+08:00</updated><entry><title>Corona 笔记</title><link href="http://www.liustrive.com/pages/2013/05/12/corona-bi-ji.html" rel="alternate"></link><updated>2013-05-12T12:19:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2013-05-12:pages/2013/05/12/corona-bi-ji.html</id><summary type="html">&lt;h3&gt;Corona 初探&lt;/h3&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>古董Leon</title><link href="http://www.liustrive.com/" rel="alternate"></link><link href="http://www.liustrive.com/feeds%5Call.atom.xml" rel="self"></link><id>http://www.liustrive.com/</id><updated>2014-07-12T00:29:00+08:00</updated><entry><title>A Neural Probabilistic Language Model 入门笔记</title><link href="http://www.liustrive.com/pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html" rel="alternate"></link><updated>2014-07-12T00:29:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-12:pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html</id><summary type="html">&lt;h5&gt;Via:  &lt;a href="www.liustrive.com"&gt;liusrive.com&lt;/a&gt;&lt;/h5&gt;
+&lt;hr /&gt;
+&lt;h4&gt;&lt;strong&gt;目标：&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;learn the joint probability function of sequences of words in a language&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;学习某种语言中单词序列的联合概率函数
+即根据训练集按照一定的算法建立一种数学模型，使之能够计算出某个句子在该模型下出现的概率，以及根据前N-1个词决定第N个词出现的概率。&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;注：见背景知识：语言模型及n-gram 模型&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;该目标面临的主要困难：&lt;/strong&gt;&lt;br /&gt;
+Curse of dimensionality 维数灾难&lt;br /&gt;
+具体表现为：&lt;br /&gt;
+&lt;em&gt;a word sequence on which the model will be tested is likely to be different from all the word sequences seen during training&lt;/em&gt;&lt;br /&gt;
+被测试的词经常并未出现在训练集中，对应概率是0，模型无法准确处理，即模型的泛化能力低&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;传统的解决办法：&lt;/strong&gt;&lt;br /&gt;
+&lt;em&gt;concatenating very short overlapping sequences seen in the training set&lt;/em&gt;&lt;br /&gt;
+采用n-gram模型，文中提到了两种常用方法：  &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;回退法（back-off trigram models）　　
+    n-gram 值为0，则采用n-1 gram并乘以一个权重模拟  &lt;/li&gt;
+&lt;li&gt;平滑法（smoothed trigram models）&lt;br /&gt;
+有多种平滑方法，比较基础的是为未出现的词或n元组赋一个非零值，并为出现过的词或n元组递增同样的值，比如为unseen的n-gram赋1，并将所有seen n-gram加1参见&lt;a href="http://en.wikipedia.org/wiki/N-gram#Smoothing_techniques"&gt;wiki&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;em&gt;注：参见背景知识：基本平滑算法&lt;/em&gt;  &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;以上方法存在一些问题：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;em&gt;it is not taking into account contexts farther than 1 or 2 words (截止文章发表时)&lt;/em&gt;  &lt;/li&gt;
+&lt;li&gt;&lt;em&gt;it is not taking into account the “similarity” between words&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;传统的方法不能建立更长的关系，无法训练出高阶语言模型；
+同时，并未考虑词的相似性，相似的词往往可以出现在相同的句式，比如：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The cat is walking in the bedroom
+A dog was running in a room&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;本文提出的方法：&lt;/strong&gt;
+ &lt;img alt="文中方法" src="https://dl-web.dropbox.com/get/public_Markdown/NN_paper_pic1.jpg?_subject_uid=106627057&amp;amp;w=AADUureOCFAfmR4n-C4WR7Gmz4YLB20mnToz2QtbKdMXww" /&gt;
+将词典中的词用词特征向量表示，通过这些特征向量来表示次序列的联合概率模型，并在模型训练阶段通过最大化训练数据的对数似然函数同时训练好特征向量和概率模型的参数。&lt;/p&gt;
+&lt;h4&gt;&lt;strong&gt;A Neural Model&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;训练集:
+sequence w1…wT ，其中的词wt 属于于很大的有限集词表V
+目标模型： 
+$$f(w_t,...,w_{t=n+1}) = \hat{P}(w_t | w_1^{t-1})$$
+将目标分解为两部分：
+&lt;center&gt; &lt;img alt="" src="https://dl-web.dropbox.com/get/public_Markdown/NNLM.jpg?_subject_uid=106627057&amp;amp;w=AADmsFt-4kWJLEQyYOu-vF32eM64ckysBHZ3ekLtO4cqDg" /&gt;
+图1 三层神经网络&lt;/center&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;将词表中的元素i映射为distributed feature vectors，即特征向量C(i)，C是一个|V|*m的矩阵，m为特征向量维数，C(i)为C中一行;&lt;/li&gt;
+&lt;li&gt;根据上下文生成的概率分布函数g，其输入为前n词的 (C(wt−n+1),••• ,C(wt−1))，输出为一个向量，其第i的元素表示 $\hat{P}(w_t = i|w_1^{t-1})$
+$$f(i,w_{t-1},...,w_{t-1-n+1} = g(i,C(w_{t-1},...,C(w_{t-n+1})))$$&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;函数f由两个映射关系g和C构成，C的参数就是|V|&lt;em&gt;m矩阵表示的词特征向量，w到C(w)的映射表示从矩阵C取出一行，C和g的参数 $θ= (C,ω)$ 构成模型需要学习的参数集，训练的过程是寻找能够使训练语料的penalized log-likelihood最大的$θ$，学习过程中参数数量和词表大小、上下文数量n成线性关系。
+ $$L=\frac{1}{T}\sum_t log f(w_t,w_{t-1},...,w_{t-n+1};\theta)+ R(\theta)$$
+文中使用的实际包含一个隐藏层的神经网络进行训练，输出层共|V|个节点, 采用softmax激活函数将y归一化成概率公式：
+ $$\hat{P}(w_t|w_{t-1},...,w_{t-n+1}) = \frac{e^{y_{w_t}}}{\sum_i e^{y_i}}$$
+&lt;/em&gt;注：此处公式参见背景知识：神经网络*&lt;/p&gt;
+&lt;p&gt;其中，$y_i$ 为下一个词为i的未归一化log概率，隐藏层使用d+Hx得到d为偏置项，具有参数b,W,U,d,H： 
+ $$y=b+Wx+U tanh(d+Hx)$$
+输入层x为将C(wt−1),C(wt−2),••• ,C(wt−n+1)这些向量首尾相连形成的（n-1）m维向量：
+ $$x=(C(w_{t-1}),C(w_{t-2}),...,C(w_{t-n+1}))$$
+于是需要训练的参数集合为：
+ $$\theta = (b,d,W,U,H,C)$$
+其中，U为一个|V|&lt;em&gt;h矩阵，表示隐藏层到输出层的参数，矩阵W为一个|V|&lt;/em&gt;（n-1）m的矩阵，包含了输入层到输出层的直连边，（参见图1中虚线以及正文末算法）。&lt;/p&gt;
+&lt;p&gt;最后通过随机梯度下降法(SGD)优化模型，最终获得词向量和语言模型。
+ $$\theta \leftarrow \theta +  \varepsilon\frac{\partial log\hat{P}(w_t|w_{t-1},...,w_{t-n+1})}{\partial \theta}$$&lt;/p&gt;
+&lt;h4&gt;&lt;strong&gt;Parallel Implementation&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;虽然前文提到本文模型参数增长为线性增长，但由于采用n-gram模型时，计算P(wt|wt−1,...,wt−n+1) 时并不需要计算词表中每一个词的概率，神经网络模型所需的计算量远大于n-gram模型。
+有关并行处理，在共享内存多处理机上文中算法实现首先采用每个处理器处理一部分子数据集，update模型的参数时需要等待资源锁，结果导致大部分CPU周期用来等待其它处理器释放参数的写锁；文章随后采用了异步实现，任何处理器任何时间都可以写共享内存，这样的实现会导致一些处理器update的参数被其它处理器写线程覆盖，但是实验表明这种noise不会降低训练速度。
+文章最终使用fast network cluster作为环境，采用了parallelize across the parameters 的方式进行计算，每个CPU负责计算输出的部分子集的unnormalized probability，并且更新涉及到的输出单元参数。&lt;/p&gt;
+&lt;p&gt;这种策略下，CPU间的通讯只需要包括:  &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;output softmax的归一化因子&lt;/li&gt;
+&lt;li&gt;隐藏层和词特征层的梯度&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;对于单一训练样本，假设有词表数|V|，隐藏单元h，词序n，词特征项m，则计算复杂度为： |V|(1+nm+h)+h(1+nm)+nm
+单一训练样本复杂度除以计算weighted sums of output units复杂度得到：
+ $$\frac{|V|(1+(n-1)m+h)}{|V|(1+(n-1)m+h)+h(1+(n-1)m)+(n-1)m}$$
+可知总体上将输出单元计算并行化是有优势的。&lt;/p&gt;
+&lt;h4&gt;&lt;strong&gt;处理器i，数据点t 的计算(BP)&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;Forward phase，前向计算：&lt;/strong&gt;
+1. 为词特征层前向计算
+    &amp;gt;   $x(k) \leftarrow C(w_{t-k})$
+    &amp;gt;   $x=(x(1),x(2),...,x(n-1))$  &lt;/p&gt;
+&lt;p&gt;2. 为隐藏层前向计算，d是偏置项，激活函数tanh
+    &amp;gt; $o \leftarrow d + Hx$
+    &amp;gt;    $a \leftarrow tanh(o)$&lt;/p&gt;
+&lt;p&gt;3. 为第i个块内输出做前向计算&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;$s_i \leftarrow 0$
+   for each j in i-th block
+    &amp;gt;   　$y_j \leftarrow b_j + a.U_j$
+    &amp;gt;   　if( direct connections) 
+    &amp;gt;   　　$y_j \leftarrow y_j + x.W_j$&lt;br /&gt;
+    &amp;gt;   　$p_j \leftarrow e^{y_j}$
+    &amp;gt;   　$S_i \leftarrow S_i + p_j$ &lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;$S=∑_i s_i$，此计算需在所有处理器间共享$S_i$&lt;/p&gt;
+&lt;p&gt;4. 正规化概率&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;对第i块内输出以j为下标循环
+$p_j \leftarrow p_j/S$&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;5. 更新对数似然函数&lt;/p&gt;
+&lt;p&gt;$$$$&lt;strong&gt;Backward/update phase 后向计算/更新阶段&lt;/strong&gt;
+1. 清空梯度向量∂L/∂a，∂L/∂x&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;对第i个块内以j为下标循环
+  　$\frac{\partial L}{\partial y_j} \leftarrow 1_{j==w_t - p_j}$
+ 　$b_j \leftarrow b_j + \varepsilon \frac{\partial L}{\partial y_j}$
+ 　If(direct connections)
+ 　　$ \frac{\partial L}{\partial x} \leftarrow \frac{\partial L}{\partial x} + \frac{\partial L}{\partial y_j}W_j$
+　$ \frac{\partial L}{\partial a} \leftarrow \frac{\partial L}{\partial a} + \frac{\partial L}{\partial y_j}W_j$
+　If(direct connection)
+　　$W_j \leftarrow W_j + \varepsilon\frac{\partial L}{\partial y_j}x$
+　$U_j \leftarrow U_j + \varepsilon\frac{\partial L}{\partial y_j}x$&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;2. 对$\frac{\partial L}{\partial a}, \frac{\partial L}{\partial x}$求和并在所有处理器上共享
+3. 后向传播并更新隐藏层权重&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;k由1到h
+　$\frac{\partial L}{\partial o_k} \leftarrow (1 -a_k^2)\frac{\partial L}{\partial a_k}$
+　$\frac{\partial L}{\partial x} \leftarrow \frac{\partial L}{\partial x} + H'\frac{\partial L}{\partial o}$
+　$d \leftarrow d + \varepsilon \frac{\partial L }{\partial o}$
+　$H \leftarrow H + \varepsilon \frac{\partial L }{\partial o}x'$&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;4. 为输入更新此特征向量&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;$K ∈ (1,n-1)$
+$C(w_{t-k} \leftarrow C(w_{t-k}) + \varepsilon \frac{\partial L}{\partial x(k)})$
+ 其中$∂L/(∂x(k))$是∂$L/∂x$的第k分量&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4&gt;&lt;strong&gt;背景知识&lt;/strong&gt;&lt;/h4&gt;
+&lt;h5&gt;&lt;strong&gt;语言模型及n-gram 模型&lt;/strong&gt;&lt;/h5&gt;
+&lt;p&gt;&lt;strong&gt;语言模型：&lt;/strong&gt;
+统计式的语言模型是借由一个机率分布，而指派机率给字词所组成的字串：
+ $$P(w_1,...,w_m)$$
+由此得到推论：
+$$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,w_{t−1})$$
+简单的讲就是看一串字词的组合有多大可能出现，换句话讲就是有没有可能是正常人类语言。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;N-gram模型：&lt;/strong&gt;
+语言的一种统计学模型为，根据已出现的词，得出下一个词出现的概率，即：
+ $$\hat{p}(w_1^T)\prod_{t=1}^T \hat{p}(w_t|w_1^{t-1})$$
+在建立自然语言的统计学模型时，为简化问题，假设第t个词只与其前n-1个词有关，于是有：
+ $$\hat{p}(w_t|w_1^{t-1})\approx \hat{p}(w_t|w_{t-n+1}^{t-1})$$
+根据这个模型，通过对语料建立一个多项分布模型，采用最大似然估计，可以获得任意句子在该模型下出现的概率。
+ $$p(w_i|w_1w_2...w_{i-1}) = \frac{C(w_1w_2...w_{i-1}w_i)}{C(w_1w_2...w_{i-1})}$$&lt;/p&gt;
+&lt;h5&gt;&lt;strong&gt;基本平滑算法&lt;/strong&gt;&lt;/h5&gt;
+&lt;ul&gt;
+&lt;li&gt;回退Back-off
+    如果n-gram的值为零，则用n-1 gram来计算  &lt;/li&gt;
+&lt;li&gt;平滑Smoothing
+    将MLE方法与其它方向相混合，保证没有0概率的值&lt;/li&gt;
+&lt;li&gt;加1平滑
+    T:训练数据,V:词表,w: 词
+          预测 p’(w|h)=(c(h,w)+1)/(c(h)+|V|)
+          特别:非条件分布时p’(w)=(c(w)+1)/(|T|+|V|)
+    问题：经常会|V|&amp;gt;c(h)，甚至|V|&amp;gt;&amp;gt;c(h) &lt;/li&gt;
+&lt;li&gt;小于1平滑：
+    加入λ系数 
+    -T:训练数据,V:词表,w: 词
+       预测 p’(w|h)=(c(h,w)+λ)/(c(h)+ λ |V|), λ&amp;lt;1
+        特别:非条件分布时p’(w)=(c(w)+ λ)/(|T|+ λ |V|)&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Good-Turing:
+    1、适用于评估大规模的数据
+    2、相似点：
+    $pr(w)=(c(w)+1)&lt;em&gt;N(c(w)+1)/(|T|&lt;/em&gt;N(c(w)))$,
+    其中：N(c)是数目为c的词的数量
+    特别：对于训练集中没有出现的词，$c(w)=0 pr(w)=N(1)/(|T|*N(0))$
+    有利于数量少的词语（&amp;lt;5-10, 但N(c)较大）
+    “调富济贫”
+    归一化（可以得到$\lambda_i &amp;gt; 0, \sum_{i=0...n} \lambda_i = 1$）&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;典型n-gram语言模型的平滑:&lt;br&gt; &lt;br /&gt;
+ 1、采用$λ=(λ0,λ1,λ2,λ3)$ &lt;br&gt; 
+ 2、归一化：
+       $λi &amp;gt; 0, ∑_{(i=0…n)}λ_i=1 $&lt;br&gt;
+    3、极大似然估计
+    : 固定p3,p2,p1和|V|，根据训练数据确定参数
+    : 再寻找一组{λi}使得交叉熵达到最小
+    （使数据的概率达到最大）：&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;EM平滑算法:
+1、从某些λ开始，如λj&amp;gt;0,所有j∈0..3
+2、计算每个λj的期望数值 
+3、采用“Next λ”公式计算的λj新集合 
+4、返回2，除非遇到终止条件 
+    终止条件为： λ收敛 
+      简单设定一个ε，当step3中对每个j都有 
+      $|λj-λj ,next|&amp;lt; ε$时终止 
+ &lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h5&gt;&lt;strong&gt;神经网络&lt;/strong&gt;&lt;/h5&gt;
+&lt;p&gt;神经网络的本质是两个阶段非线性统计模型：
+&lt;center&gt; &lt;img alt="" src="https://dl-web.dropbox.com/get/public_Markdown/NN_note_basic.jpg?_subject_uid=106627057&amp;amp;w=AABR3UpMBmqifCYORPcB75lSGTH3RZPa4k5715iTB8GuFA" /&gt;
+图2神经网络模型&lt;/center&gt;
+如图2所示，中间红色Z为导出特征，也称隐藏层，有输入的线性组合创建Z，再用Z的线性组合建立以Y为目标的模型。
+ $$Z_m = \sigma(\alpha_{0m} + \alpha_m^TX),m=1,...,M$$
+ $$T_k = \beta_{0k} + \beta_k^TZ, k=1,...,K$$
+ $$f_k(X) = g_k(T), k=1,...,K$$
+激活函数$σ（ע）=exp(y)/(1+exp(y))=1/(1+exp(-y))$ 
+输出函数g_k (T)是对向量T的最终变换，早期K分类采用恒等函数，后来被softmax函数取代，因其可以产生和为1的正估计：
+ $$g_k(T) = \frac{e^{T_k}}{\sum_{\epsilon=1}^{K}e^{T_\epsilon}}$$&lt;/p&gt;
+&lt;h5&gt;&lt;strong&gt;Training of Neural Networks&lt;/strong&gt;&lt;/h5&gt;
+&lt;p&gt;未知参数称为权，用$\theta$表示权的全集 
+对于回归和分类问题，我们分别使用误差的平方和，平方误差或互熵（离散）作为拟合的度量 
+ $${\alpha_{0m},\alpha_m;m=1,2,...,M} M(p+1) weights$$
+ $${\beta_{0k},\beta_k;k=1,2,...,K} K(M+1) weights$$
+ $$R(\theta) = \sum_{k=1}^K \sum_{i=1}^{N}(y_{ik}-f_k(x_i))^2$$
+  $$R(\theta) = - \sum_{i=1}^N \sum_{k=1}^{K}(y_{ik}-\log f_k(x_i))$$&lt;/p&gt;</summary><category term="NLP"></category><category term="Neural Network"></category><category term="Bengio"></category></entry><entry><title>Corona 笔记</title><link href="http://www.liustrive.com/pages/2013/05/12/corona-bi-ji.html" rel="alternate"></link><updated>2013-05-12T12:19:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2013-05-12:pages/2013/05/12/corona-bi-ji.html</id><summary type="html">&lt;h3&gt;Corona 初探&lt;/h3&gt;
 &lt;p&gt;本周关注了一下另一种号称下一代MapReduce的框架：&lt;strong&gt;Corona&lt;/strong&gt;。它是facebook的开源框架，代码在：&lt;/p&gt;
 &lt;p&gt;&lt;a href="https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona"&gt;https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona&lt;/a&gt; &lt;/p&gt;
 &lt;p&gt;Cornna的设计需求与Apache的YARN框架十分相似，它的发布文档：&lt;/p&gt;

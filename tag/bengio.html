@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="./theme/html5.js"></script>
+    <script src="../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="./theme/bootstrap.min.css" rel="stylesheet">
-    <link href="./theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="./theme/local.css" rel="stylesheet">
-    <link href="./theme/pygments.css" rel="stylesheet">
+    <link href="../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../theme/local.css" rel="stylesheet">
+    <link href="../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,12 +32,12 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href=".">古董Leon</a>
+        <a class="brand" href="..">古董Leon</a>
 
         <div class="nav-collapse">
         <ul class="nav">
             
-            <li><a href="./pages/about.html">About</a></li>
+            <li><a href="../pages/about.html">About</a></li>
         </ul>
 <form class="navbar-search pull-right" action="/search.html">
     <input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -60,10 +60,10 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html"><h1>A Neural Probabilistic Language Model 入门笔记</h1></a>
+            <a href="../pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html"><h1>A Neural Probabilistic Language Model 入门笔记</h1></a>
 2014-07-12
 
-by <a class="url fn" href="./author/leon.html">Leon</a>
+by <a class="url fn" href="../author/leon.html">Leon</a>
  
 
 
@@ -284,112 +284,11 @@ $$P(w_1,w_2,…,w_t)=P(w_1)×P(w_2|w_1)×P(w_3|w_1,w_2)×…×P(w_t|w_1,w_2,…,
         <hr />
     </div>
 		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/05/12/corona-bi-ji.html"><h2>Corona 笔记</h2></a>
-        <div class= "well small"> 2013-05-12
-
-by <a class="url fn" href="./author/leon.html">Leon</a>
- 
-
-
- </div>
-        <div class="summary"><h3>Corona 初探</h3>
-<p>本周关注了一下另一种号称下一代MapReduce的框架：<strong>Corona</strong>。它是facebook的开源框架，代码在：</p>
-<p><a href="https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona">https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona</a> </p>
-<p>Cornna的设计需求与Apache的YARN框架十分相似，它的发布文档：</p>
-<p>“<a href="http://www.jorditorres.org/wp-content/uploads/2012/11/CC-MEI-Corona-AntonioRodriguez.pdf">Under the Hood: Scheduling MapReduce jobs more efficiently with Corona</a>”</p>
-<p>其中提到，当前Map-Reduce所使用的single Job Tracker在Facebook的运行环境下已经遇到瓶颈，在Hadoop Corona中，集群的资源是由central Cluster Manager统一分配调度，每个job拥有各自单独的Corona Job Tracker，这些与YARN框架的设计思路非常相近，解决了Map-Reduce中存在的扩展性、单点故障等不足。</p>
-<p>相比于YARN，Corona似乎更贴近Map-Reduce的原版，其代码在原版Map-Reduce基础上修改而来，似乎更贴近原有Map-Reduce的用户；另一大优势在于Corona所采用的Push-based通信机制，在原版Map-Reduce和YARN中，采用轮询方式使client获取信息 ...</p> <a class="btn btn-info xsmall" href="./pages/2013/05/12/corona-bi-ji.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/04/06/network-aware-resource-allocation-in-distributed-clouds-bi-ji.html"><h2>Network Aware Resource Allocation in Distributed Clouds 笔记</h2></a>
-        <div class= "well small"> 2013-04-06
-
-by <a class="url fn" href="./author/leon.html">Leon</a>
- 
-
-
- </div>
-        <div class="summary"><p>INFOCOM 2012 </p>
-<p>Mansoor Alicherry, T.V. Lakshman</p>
-<p>Bell Labs. </p>
-<p>这篇文章主要介绍了通讯负载和延迟最小化的高效的resource allocation算法。</p>
-<p>Key contribution：</p>
-<ol>
-<li>Develop an efficient 2-approximation algorithm for the optimal selection of data centers in the distributed cloud.</li>
-<li>Use of an optimal algorithm for rack and server selection.</li>
-<li>develop a heuristic for partitioning the requested resources for the task ...</li></ol> <a class="btn btn-info xsmall" href="./pages/2013/04/06/network-aware-resource-allocation-in-distributed-clouds-bi-ji.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/03/29/yarnchu-tan-zi-yuan-diao-du.html"><h2>Yarn初探（一）资源调度</h2></a>
-        <div class= "well small"> 2013-03-29
-
-by <a class="url fn" href="./author/leon.html">Leon</a>
- 
-
-
- </div>
-        <div class="summary"><h3>资源调度器</h3>
-<p><img alt="" src="http://i.imgur.com/1pY6g1v.jpg" />
-YARN的资源管理器本质上像一个事件处理器，需要处理6种SchedulerEvent类型的事件：</p>
-<ul>
-<li><strong>NODE_REMOVED</strong>：表示集群中被移除一个计算节点，资源调度器收到该事件时需要从可分配资源总量中移除相应的资源量。</li>
-<li><strong>NODE_ADDED</strong>：表示集群中增加了一个计算节点，资源调度器收到该事件时需要将新增的资源量添加到可分配资源总量中。</li>
-<li><strong>APPLICATION_ADDED</strong>：表示ResourceManager收到一个新的Application。资源管理器需将该Application添加到相应的数据结构中。通常，资源管理器需要为每个application维护一个独立的数据结构，以便于统一管理和资源分配。</li>
-<li><strong>APPLICATION_REMOVED</strong>：事件APPLICATION_REMOVED表示一个Application运行结束，资源管理器需将该Application从相应的数据结构中清除。</li>
-<li><strong>CONTAINER_EXPIRED</strong>：当资源调度器将一个container分配给某个ApplicationMaster后，如果该ApplicationMaster在一定时间间隔内没有使用该container，则资源调度器会对该container进行再分配。</li>
-<li><strong>NODE_UPDATE</strong>：NodeManager通过心跳机制向ResourceManager汇报各个container运行情况，会触发一个NODE_UDDATE事件。</li>
-</ul>
-<p>其中，NODE_UPDATE事件发生时表示可能有新的container得到释放，因此该事件会触发资源分配，该事件是6个事件中最重要的事件，它会触发资源调度器最核心的资源分配机制。</p>
-<h3>资源管理与分配</h3>
-<p>相比于MapReduce v1中的资源调度器，YARN采用了事件驱动的模型，因此编写起来更加复杂。同MapReduce v1一样，YARN也自带了三种常用的调度器，分别是FIFO，Capacity Scheduler和Fair Scheduler，其中，第一个是默认的调度器，它属于批处理调度器，而后两个属于多租户调度器，采用树形多队列的形式组织资源。</p>
-<p>YARN的资源表示模型目前只支持CPU和内存的管理与分配，NodeManager启动时，会向ResourceManager注册 ...</p> <a class="btn btn-info xsmall" href="./pages/2013/03/29/yarnchu-tan-zi-yuan-diao-du.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/03/14/hello.html"><h2>Hello World</h2></a>
-        <div class= "well small"> 2013-03-14
-
-by <a class="url fn" href="./author/leon.html">Leon</a>
- 
-
-
- </div>
-        <div class="summary"><h2>Hello World</h2>
-<p>开个博客，想想还是用 Hello 镇宅</p> <a class="btn btn-info xsmall" href="./pages/2013/03/14/hello.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
 
-    <li class="active"><a href="./index.html">1</a></li>
+    <li class="active"><a href="../tag/bengio.html">1</a></li>
 
     <li class="next disabled"><a href="#">&rarr; Next</a></li>
 
@@ -407,8 +306,8 @@ by <a class="url fn" href="./author/leon.html">Leon</a>
                 Site
                 </li>
             
-                <li><a href="./archives.html">Archives</a>
-                <li><a href="./tags.html">Tags</a>
+                <li><a href="../archives.html">Archives</a>
+                <li><a href="../tags.html">Tags</a>
                 <li><a href="http://www.liustrive.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
             </ul>
             </div>
@@ -420,8 +319,8 @@ by <a class="url fn" href="./author/leon.html">Leon</a>
                 Categories
                 </li>
                 
-                <li><a href="./category/life.html">life</a></li>
-                <li><a href="./category/tech.html">Tech</a></li>
+                <li><a href="../category/life.html">life</a></li>
+                <li><a href="../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -446,7 +345,7 @@ by <a class="url fn" href="./author/leon.html">Leon</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href=".">古董Leon</a> &copy; Leon 2014</p>
+<p><a href="..">古董Leon</a> &copy; Leon 2014</p>
 </footer>
 
 </div> <!-- /container -->
