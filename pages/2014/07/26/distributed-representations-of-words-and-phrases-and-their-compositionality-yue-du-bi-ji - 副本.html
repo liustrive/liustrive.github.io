@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="utf-8">
@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="../theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="../theme/bootstrap.min.css" rel="stylesheet">
-    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="../theme/local.css" rel="stylesheet">
-    <link href="../theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,12 +32,12 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href="..">古董Leon</a>
+        <a class="brand" href="../../../..">古董Leon</a>
 
         <div class="nav-collapse">
         <ul class="nav">
             
-            <li><a href="../pages/about.html">About</a></li>
+            <li><a href="../../../../pages/about.html">About</a></li>
         </ul>
 <form class="navbar-search pull-right" action="/search.html">
     <input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -53,23 +53,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/07/26/distributed-representations-of-words-and-phrases-and-their-compositionality-yue-du-bi-ji.html"><h1>Distributed Representations of Words and Phrases and their Compositionality 阅读笔记</h1></a>
+            <h1>Distributed Representations of Words and Phrases and their Compositionality 阅读笔记</h1>
 2014-07-26
 
-by <a class="url fn" href="../author/leon.html">Leon</a>
+by <a class="url fn" href="../../../../author/leon.html">Leon</a>
  
 
 
- 
         </div>
-        
+	
         <div><h6>via: <a href="www.liustrive.com">liustrive.com</a></h6>
 <p>文章提出了一些对Skp-gram模型的扩展，提出一种NCE（Noise Contrastive Estimation ）方法用以代替上文hierarchical softmax方法，从而获得更高的效率和对高频词的更好的词向量结果。
 文中提到词向量表示的一大弊端是它们无法表示一些词组成的常用短语，这短语不是字面上把其组成词连接起来的意义，于是提出扩展，将基于词的模型变成基于短语的模型，扩展的原理是先抓出这些短语，然后把这些短语作为整体的“词”加入训练集，然后使用上文实验部分中提到的方法，利用词向量代数运算验证准确性。</p>
@@ -79,7 +73,7 @@ by <a class="url fn" href="../author/leon.html">Leon</a>
 其中，$p(w_{t+j} | w_t)$ 用softmax函数计算：
  $$\hat{p}(w_t|w_{t-1},...,w_{t-n+1}) = \frac{e^{y_{w_t}}}{\sum_i e^{y_i}}$$<br />
 即：
- $$p(w_O| w_I) = \frac{exp({v'}<em w_I="w_I">{w_O} {}^{\mathrm{T}} v</em>)}{\sum_{w=1}^W exp(v'<em w_I="w_I">w {}^{\mathrm{T}}v</em>)}$$  </p>
+ $$p(w_O| w_I) = \frac{exp({v'}<em w_I="w_I">{w_O} a^{\mathrm{T}} v</em>)}{\sum_{w=1}^W exp(v'<em w_I="w_I">w b^{\mathrm{T}}v</em>)}$$  </p>
 <h4><strong>Hierarchical Softmax</strong></h4>
 <p>Hierarchical Softmax是full softmax的一种计算量优化，其目标是减少计算：<br />
 $$p(A|C) = \frac{e^{-E(A,C)}}{\sum_{v=1}^V e^{-E(wv,C)}}$$
@@ -89,7 +83,7 @@ $$p(A|C) = \frac{e^{-E(A,C)}}{\sum_{v=1}^V e^{-E(wv,C)}}$$
 <h4><strong>Negative Sampling</strong></h4>
 <p>文章提出一种代替hierarchical softmax的方法（NCE），NCE能够求出softmax的对数概率函数近似最大，由于skip-gram模型只关心词向量的质量，所以在保证词向量准确性的条件下，还可以进一步简化NCE，文章定义了NCG方法：
 每个$\log p(W_O | W_I) $的运算被下式替代：<br />
-$$\log \sigma ({v'}<em w_I="w_I">{w_O} {}^{\mathrm{T}}v</em>) + \sum_{i=1}^{k} E_{w_i \sim P_n(w)}\log \sigma(-{v'}<em w_I="w_I">{w_i} {}^{\mathrm{T}}v</em>)]$$<br />
+$$\log \sigma (v'<em w_I="w_I">{w_O} {}^{\mathrm{T}}v</em>) + \sum_{i=1}^{k} E_{w_i \sim P_n(w)}\log \sigma(-v'<em w_I="w_I">{w_i} {}^{\mathrm{T}}v</em>)]$$<br />
 其中k是为每个数据样本选用k个负类样本，在小的数据集时可以取5-20，大的数据集甚至取2-5就够用，Negative sampling 和NCE的主要区别是NCE同时需要样本和噪声分布的数值概率 ？  </p>
 <h4><strong>Subsampling of Frequent Words</strong></h4>
 <p>在大型的语料中，一些词会有非常高的词频，比如the, a , in 这种类型词，但是这种高频词往往比一些低频词提供更少的有效信息，所以为了逆转这种不平衡性，文章提出一种二次抽样方法：<br />
@@ -148,80 +142,23 @@ $$score(w_i,w_j) = \frac{count(w_i,w_j)-\delta}{count(w_i)\times count(w_j)}$$
     }
 </script>
 </div>
-        <hr />
-    </div>
-		
+	
+        <hr>
 
- 
-        
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'liustrive'; 
+    var disqus_title = 'Distributed Representations of Words and Phrases and their Compositionality 阅读笔记';
 
- 
-
-    <div class='article'>
-        <a href="../pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html"><h2>Efﬁcient Estimation of Word Representations in Vector Space 阅读笔记</h2></a>
-        <div class= "well small"> 2014-07-25
-
-by <a class="url fn" href="../author/leon.html">Leon</a>
- 
-
-
- </div>
-        <div class="summary"><h6>via: <a href="www.liustrive.com">liustrive.com</a></h6>
-<h4><strong>背景</strong></h4>
-<p>现有模型，比如前文Bengio的采用非线性激活函数tanh的神经网络模型，虽然准确度上有优势，但是算法的复杂度较高，无法训练更大的数据集，比如特征向量维度为50-100情况下训练超过几百兆个的语料。</p>
-<h4><strong>目标</strong></h4>
-<p>提出一种模型使其能够训练百万级词表下数十亿词量的训练集，并产出优质词特征向量。</p>
-<h4><strong>Model Architectures </strong></h4>
-<h5><strong>Feedforward Neural Net Language Model (NNLM)</strong></h5>
-<p>此即前文所述前向神经网络语言模型，采用四层神经网络（原文讲实际是三层神经网络）
-输入层、投影层、隐藏层、输出层
-每个训练样本的计算复杂度为：
-$$Q = N × D + N × D × H + H × V$$
-其中，N为n-gram模型中n值，D为词向量维度，H是隐藏层size（通常500-1000），V是词表大小，同时也是输出层的节点数量，N<em>D为输入层到投影层权重个数，H</em>V表示隐藏层到输出层的权重个数，N<em>D ...</em></p><script type= "text/javascript">
-    if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-        var mathjaxscript = document.createElement('script');
-        mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-        mathjaxscript.type = 'text/javascript';
-        mathjaxscript.src = 'https:' == document.location.protocol
-                ? 'https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
-                : 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-            "MathJax.Hub.Config({" +
-            "    config: ['MMLorHTML.js']," +
-            "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-            "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-            "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-            "    displayAlign: 'center'," +
-            "    displayIndent: '0em'," +
-            "    showMathMenu: true," +
-            "    tex2jax: { " +
-            "        inlineMath: [ ['$','$'] ], " +
-            "        displayMath: [ ['$$','$$'] ]," +
-            "        processEscapes: true," +
-            "        preview: 'TeX'," +
-            "    }, " +
-            "    'HTML-CSS': { " +
-            "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
-            "    } " +
-            "}); ";
-        (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-    }
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
 </script>
- <a class="btn btn-info xsmall" href="../pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="../tag/word2vec.html">1</a></li>
-
-    <li class="next disabled"><a href="#">&rarr; Next</a></li>
-
-</ul>
-</div>
- 
-  
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
         </div>
         
         <div class="span3">
@@ -232,8 +169,8 @@ $$Q = N × D + N × D × H + H × V$$
                 Site
                 </li>
             
-                <li><a href="../archives.html">Archives</a>
-                <li><a href="../tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <li><a href="http://www.liustrive.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
             </ul>
             </div>
@@ -245,8 +182,8 @@ $$Q = N × D + N × D × H + H × V$$
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">life</a></li>
-                <li><a href="../category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -271,7 +208,7 @@ $$Q = N × D + N × D × H + H × V$$
     </div>     </div> 
 <footer>
 <br />
-<p><a href="..">古董Leon</a> &copy; Leon 2014</p>
+<p><a href="../../../..">古董Leon</a> &copy; Leon 2014</p>
 </footer>
 
 </div> <!-- /container -->

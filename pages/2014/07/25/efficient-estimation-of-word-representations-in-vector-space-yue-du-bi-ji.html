@@ -96,8 +96,8 @@ $$Q = C × (D + D × \log_2(V ))$$
 <h4><strong>实验部分</strong></h4>
 <p>作者表示中国相似法国相似意大利这种例子太没意思，前文也提到了训练产出的词向量具有（一定程度的）代数运算性质，于是文中设计了一系列实验，用代数运算的结果来验证模型的训练结果能否反映词之间的关系，并以此表示词向量的好坏。</p>
 <h5><strong>Task description</strong></h5>
-<p><center><img alt="" src="http://cl.ly/YFSt/cbow-exp.jpg" />
-作者采用的测试分类</center>
+<p><center><img alt="" src="http://cl.ly/YFSt/cbow-exp.jpg" />  </p>
+<p>作者采用的测试分类</center>
 作者设计了五类语义问题以及九类语法问题，比如男-女类 兄弟→姐妹 孙子→孙女，于是应该得到vector(“兄弟”) – vector(“姐妹”) + vector(“孙子”) = vector(“孙女”)
 通过验证这些类别中的词组是否得到正确的代数运算结果，衡量词向量的准确性</p>
 <h5><strong>Maximization of Accuracy</strong></h5>

@@ -89,7 +89,7 @@ $$p(A|C) = \frac{e^{-E(A,C)}}{\sum_{v=1}^V e^{-E(wv,C)}}$$
 <h4><strong>Negative Sampling</strong></h4>
 <p>文章提出一种代替hierarchical softmax的方法（NCE），NCE能够求出softmax的对数概率函数近似最大，由于skip-gram模型只关心词向量的质量，所以在保证词向量准确性的条件下，还可以进一步简化NCE，文章定义了NCG方法：
 每个$\log p(W_O | W_I) $的运算被下式替代：<br />
-$$\log \sigma (v'<em w_I="w_I">{w_O} {}^{\mathrm{T}}v</em>) + \sum_{i=1}^{k} E_{w_i \sim P_n(w)}\log \sigma(-v'<em w_I="w_I">{w_i} {}^{\mathrm{T}}v</em>)]$$<br />
+$$\log \sigma ({v'}<em w_I="w_I">{w_O} {}^{\mathrm{T}}v</em>) + \sum_{i=1}^{k} E_{w_i \sim P_n(w)}\log \sigma(-{v'}<em w_I="w_I">{w_i} {}^{\mathrm{T}}v</em>)]$$<br />
 其中k是为每个数据样本选用k个负类样本，在小的数据集时可以取5-20，大的数据集甚至取2-5就够用，Negative sampling 和NCE的主要区别是NCE同时需要样本和噪声分布的数值概率 ？  </p>
 <h4><strong>Subsampling of Frequent Words</strong></h4>
 <p>在大型的语料中，一些词会有非常高的词频，比如the, a , in 这种类型词，但是这种高频词往往比一些低频词提供更少的有效信息，所以为了逆转这种不平衡性，文章提出一种二次抽样方法：<br />
