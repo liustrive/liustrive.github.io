@@ -1,5 +1,197 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>古董Leon</title><link href="http://www.liustrive.com/" rel="alternate"></link><link href="http://www.liustrive.com/feeds%5Call-zh.atom.xml" rel="self"></link><id>http://www.liustrive.com/</id><updated>2014-07-26T12:12:00+08:00</updated><entry><title>Distributed Representations of Words and Phrases and their Compositionality 阅读笔记</title><link href="http://www.liustrive.com/pages/2014/07/26/distributed-representations-of-words-and-phrases-and-their-compositionality-yue-du-bi-ji.html" rel="alternate"></link><updated>2014-07-26T12:12:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-26:pages/2014/07/26/distributed-representations-of-words-and-phrases-and-their-compositionality-yue-du-bi-ji.html</id><summary type="html">&lt;h6&gt;via: &lt;a href="www.liustrive.com"&gt;liustrive.com&lt;/a&gt;&lt;/h6&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>古董Leon</title><link href="http://www.liustrive.com/" rel="alternate"></link><link href="http://www.liustrive.com/feeds%5Call-zh.atom.xml" rel="self"></link><id>http://www.liustrive.com/</id><updated>2014-07-29T09:37:00+08:00</updated><entry><title>Word2vec Code 阅读笔记</title><link href="http://www.liustrive.com/pages/2014/07/29/word2vec-code-yue-du-bi-ji.html" rel="alternate"></link><updated>2014-07-29T09:37:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-29:pages/2014/07/29/word2vec-code-yue-du-bi-ji.html</id><summary type="html">&lt;h6&gt;via: &lt;a href="http://www.liustrive.com"&gt;liustrive.com&lt;/a&gt;&lt;/h6&gt;
+&lt;h4&gt;&lt;strong&gt;参数：&lt;/strong&gt;&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;hs&lt;/span&gt;
+&lt;span class="n"&gt;negative&lt;/span&gt;
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;binary&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;cbow&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;debug_mode&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;window&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;min_count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;num_threads&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;min_reduce&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="c1"&gt;// window是训练时前后文长度随机数的边界，其它参数看名字&lt;/span&gt;
+&lt;span class="n"&gt;layer1_size&lt;/span&gt;  &lt;span class="c1"&gt;// 向量维度&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;&lt;strong&gt;结构：&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;基本词结构体&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;vocab_word&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="kt"&gt;long&lt;/span&gt; &lt;span class="kt"&gt;long&lt;/span&gt; &lt;span class="n"&gt;cn&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="c1"&gt;// 词频数&lt;/span&gt;
+  &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;point&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;   &lt;span class="c1"&gt;// root 到该节点的路径，存的是路径节点索引&lt;/span&gt;
+  &lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;word&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="c1"&gt;// 词串&lt;/span&gt;
+&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;code&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="c1"&gt;// Huffman编码&lt;/span&gt;
+&lt;span class="n"&gt;codelen&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="c1"&gt;// Huffman码长度&lt;/span&gt;
+&lt;span class="p"&gt;};&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;&lt;strong&gt;全局变量：&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;struct vocab_word *vocab; // 词表&lt;/strong&gt;   &lt;/p&gt;
+&lt;p&gt;值得注意的是词表的内存是1000为单位递增扩大的，相关代码：  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;vocab_size&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="n"&gt;vocab_max_size&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;span class="n"&gt;vocab_max_size&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="n"&gt;vocab&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;vocab_word&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;realloc&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;vocab&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;vocab_max_size&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="k"&gt;sizeof&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;vocab_word&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;int *vocab_hash; // 词hash码对应词下标的数组&lt;/strong&gt;&lt;br /&gt;
+ vocab_hash[hashcode] –&amp;gt; index&lt;br /&gt;
+需要注意的是word2vec采用的是标准hash table存放方式，hash码重复后挨着放
+取的时候根据拿出index找到词表里真正单词，跟比一下&lt;br /&gt;
+&lt;strong&gt;syn0&lt;/strong&gt; &lt;br /&gt;
+就是词向量的大矩阵，第i行表示vocab中下标为i的词&lt;br /&gt;
+&lt;strong&gt;syn1&lt;/strong&gt; &lt;br /&gt;
+用hs算法时用到的辅助矩阵，即文章中的Wx&lt;br /&gt;
+&lt;strong&gt;syn1neg &lt;/strong&gt;&lt;br /&gt;
+negative sampling算法时用到的辅助矩阵&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Next_random&lt;/strong&gt;&lt;br /&gt;
+作者自己生成的随机数，线程里面初始化就是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kt"&gt;unsigned&lt;/span&gt; &lt;span class="kt"&gt;long&lt;/span&gt; &lt;span class="kt"&gt;long&lt;/span&gt; &lt;span class="n"&gt;next_random&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;long&lt;/span&gt; &lt;span class="kt"&gt;long&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;更新用的：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;next_random&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;next_random&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;unsigned&lt;/span&gt; &lt;span class="kt"&gt;long&lt;/span&gt; &lt;span class="kt"&gt;long&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="mi"&gt;25214903917&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;11&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;伪随机伪到家了=_=  &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;expTable&lt;/strong&gt;&lt;br /&gt;
+直接用一个数组记录指数值，要用的时候直接查近似值，不用算，其初始化代码如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;  &lt;span class="n"&gt;expTable&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;real&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;malloc&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;EXP_TABLE_SIZE&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="k"&gt;sizeof&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;real&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
+  &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;EXP_TABLE_SIZE&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;expTable&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;real&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;EXP_TABLE_SIZE&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;MAX_EXP&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt; 
+    &lt;span class="n"&gt;expTable&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;expTable&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;expTable&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;         &lt;span class="c1"&gt;// Precompute f(x) = x / (x + 1)&lt;/span&gt;
+  &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;vocab_size&lt;/strong&gt;&lt;br /&gt;
+ 词表大小&lt;/p&gt;
+&lt;h4&gt;&lt;strong&gt;函数: &lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;void InitNet()&lt;/strong&gt;&lt;br /&gt;
+主要承担初始化、开内存、建Huffman树的任务，为syn0,syn1（采用HS时）,syn1neg（采用negative时）开内存，其中syn0用-0.005~0.005之间的数随机初始化&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;void CreateBinaryTree()&lt;/strong&gt;&lt;br /&gt;
+创建Huffman树，以词频为权重，于是词频越高的词Huffman code越短
+基本流程与Huffman建树算法一致，但是代码很优雅&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;void &lt;em&gt;TrainModelThread(void &lt;/em&gt;id)&lt;/strong&gt;&lt;br /&gt;
+SubSample 相关代码&lt;br /&gt;
+&lt;center&gt;&lt;img alt="" src="http://cl.ly/YHt5/codeblock_1.jpg" /&gt;&lt;/center&gt;&lt;br /&gt;
+一定概率扔掉高频词，词频越高discard概率越大。&lt;/p&gt;
+&lt;h4&gt;&lt;strong&gt;代码&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;neu1 隐层矩阵 neu1[i]为隐层向量，&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;CBOW&lt;/strong&gt;&lt;br /&gt;
+b = next_random % window; &lt;br /&gt;
+&lt;center&gt;&lt;img alt="" src="http://cl.ly/YHYn/codeblock_2.jpg" /&gt;&lt;/center&gt;
+CBOW模型采取的是将一个随机大小的窗口中文本向量相加获得隐层向量&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;HS&lt;/strong&gt;&lt;br /&gt;
+&lt;center&gt;&lt;img alt="" src="http://cl.ly/YHhB/codeblock_3.jpg" /&gt;&lt;/center&gt;&lt;br /&gt;
+其中，f是 &lt;span class="math"&gt;\(σ(neu1^T  ×syn1)\)&lt;/span&gt; ，l2是父节点索引&lt;br /&gt;
+&lt;span class="math"&gt;\(f \leftarrow p(x)\)&lt;/span&gt;&lt;br /&gt;
+交叉熵L为： &lt;br /&gt;
+&lt;span class="math"&gt;\(xlogp(x)+(1-x)*log(1-p(x))\)&lt;/span&gt;&lt;br /&gt;
+其中&lt;br /&gt;
+&lt;span class="math"&gt;\(p(x) =\frac{exp(neu1[c] * syn1[c + l2])}{(1+exp(neu1[c] * syn1[c + l2]))}\)&lt;/span&gt;&lt;br /&gt;
+于是有：&lt;br /&gt;
+&lt;div class="math"&gt;$$log(L) = code[d]* neu1[c] * syn1[c + l2] –(1-code[d])*log(1 + exp(neu1[c] * syn1[c + l2]))$$&lt;/div&gt;
+&lt;br /&gt;
+求对syn1的偏导：&lt;br /&gt;
+&lt;div class="math"&gt;$$\frac{(∂log(L))}{∂syn1}= (1 -code - p(x))*neu1$$&lt;/div&gt;
+&lt;br /&gt;
+对neu1求偏导：&lt;br /&gt;
+&lt;div class="math"&gt;$$neu1e=  \frac{(∂log(L))}{∂neu1}= (1 -code - p(x))*syn1$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;所以g是梯度乘以学习速率中的公因子&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Negative Sampling 代码&lt;/strong&gt;
+ &lt;center&gt;&lt;img alt="" src="http://cl.ly/YIE4/codeblock_4.jpg" /&gt;&lt;/center&gt;
+采取negative次生成负样本，当negative为0时选word自己作为正样本，当抽到word自己时跳过&lt;br /&gt;
+抽取的负样本label为0，可以看做HS中的一层
+于是有&lt;br /&gt;
+&lt;div class="math"&gt;$$交叉熵 = -label \times \log f - (1-label)\times (1-f)$$&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;隐藏层到输入层：&lt;/strong&gt;&lt;br /&gt;
+&lt;center&gt;&lt;img alt="" src="http://cl.ly/YHcD/codeblock_5.jpg" /&gt;&lt;/center&gt; &lt;br /&gt;
+前面用的输入层向量相加得到隐层向量，于是对词向量的更新可以直接用梯度neu1e[c]&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="NLP"></category><category term="word2vec"></category><category term="Mikolov"></category><category term="code"></category></entry><entry><title>Linguistic Regularities in Continuous Space Word Representations 阅读笔记</title><link href="http://www.liustrive.com/pages/2014/07/27/linguistic-regularities-in-continuous-space-word-representations-yue-du-bi-ji.html" rel="alternate"></link><updated>2014-07-27T18:55:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-27:pages/2014/07/27/linguistic-regularities-in-continuous-space-word-representations-yue-du-bi-ji.html</id><summary type="html">&lt;h6&gt;via: &lt;a href="http://www.liustrive.com"&gt;liustrive.com&lt;/a&gt;&lt;/h6&gt;
+&lt;p&gt;这篇文章主要就是介绍词向量支持基本代数运算的特性，并利用这一特性将之应用到SemEval 2012 Task 来衡量。&lt;br /&gt;
+&lt;strong&gt;背景：&lt;/strong&gt;&lt;br /&gt;
+&lt;a href="http://www.cs.york.ac.uk/semeval-2012/index.php?id=tasks"&gt;SemEval 2012 task&lt;/a&gt;&lt;/p&gt;
+&lt;h4&gt;&lt;strong&gt;Recurrent Neural Network Model&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;RNNLM模型由输入层、带有循环连接以及对应权重矩阵的隐藏层、输出层构成，如下图：&lt;br /&gt;
+&lt;center&gt;&lt;img alt="" src="http://cl.ly/YFxq/RNN.jpg" /&gt;&lt;/center&gt;
+输入是词表V大小|V|维向量，W(t)表示时间t输入的用1-of-N编码表示的词，输出层y(t)产生词的概率分布，维度也是|V|，隐藏层s(t)维护一个句子出现历史的描述，隐层到输出层采用如下计算：&lt;br /&gt;
+&lt;center&gt;&lt;img alt="" src="http://cl.ly/YIRB/cbow-exp_2_6.jpg" /&gt;&lt;/center&gt;&lt;br /&gt;
+训练产出中词向量保存在参数矩阵U中，模型训练采用后向传播的最大化对数似然函数方法。&lt;/p&gt;
+&lt;h4&gt;&lt;strong&gt;实验部分&lt;/strong&gt;&lt;/h4&gt;
+&lt;h5&gt;&lt;strong&gt;测试集&lt;/strong&gt;&lt;/h5&gt;
+&lt;p&gt;&lt;strong&gt;Syntactic Test Set&lt;/strong&gt;&lt;br /&gt;
+词向量的语法规则测试集如下图Table1&lt;br /&gt;
+&lt;center&gt;&lt;img alt="" src="http://cl.ly/YIAi/cbow-exp_2_7.jpg" /&gt;&lt;/center&gt;&lt;/p&gt;
+&lt;p&gt;作者采用Penn Treebank POS tags对报纸新闻文本做标记，选取词频最高的前100组（JJ/JJR，NN/NNS ，NN/NN_POS，VB/VBD, VBD/VBZ）这样的组合作为测试集，总大小8000组。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Semantic Test Set&lt;/strong&gt;
+词向量的语义测试集用的是&lt;a href="http://www.cs.york.ac.uk/semeval-2012/task2/"&gt;SemEval-2012 Task 2&lt;/a&gt;，来测试RNNLM训练出的词向量所包含的语义规则.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The Vector Offset Method&lt;/strong&gt;
+这部分主要就是介绍词向量之间的空间规则，比如之前的实验测试了向量：&lt;br /&gt;
+&lt;div class="math"&gt;$$X_a \rightarrow X_b ≈ X_c \rightarrow X_d$$&lt;/div&gt;
+于是计算&lt;span class="math"&gt;\(y = X_b – X_a + X_c\)&lt;/span&gt;，并寻找离向量y最近的词，观察这个结果是否是&lt;span class="math"&gt;\(X_d\)&lt;/span&gt;，以及已知&lt;span class="math"&gt;\(X_d\)&lt;/span&gt;了，计算&lt;span class="math"&gt;\(cos(y,d)\)&lt;/span&gt;&lt;/p&gt;
+&lt;h4&gt;&lt;strong&gt;实验验证结果&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;作者使用上文RNNLM模型分别生成了80、320、640、1600维的词向量，其数据集是320M的Broadcase News，词表大小为82k，测试采用上文的测试方式，主要对比对象时LSA得到结果如图Table2&lt;br /&gt;
+&lt;center&gt;&lt;img alt="" src="http://cl.ly/YHxs/cbow-exp_2_8.jpg" /&gt;&lt;/center&gt;&lt;/p&gt;
+&lt;p&gt;可以发现以语法规则的精确性衡量，RNNLM模型词向量精确性上具有优势，而后作者还将RNNLM与其它已知的模型做对比，采用这些模型使用的测试集：6632个问句，36k的词表大小，37M大小的词量，结果如图Table3：&lt;br /&gt;
+&lt;center&gt;&lt;img alt="" src="http://cl.ly/YI3x/cbow-exp_2_9.jpg" /&gt;&lt;/center&gt;&lt;/p&gt;
+&lt;p&gt;发现Hierarchical Log-Bilinear Model几乎与RNNLM提供了一样的精确度，由于输入集是37M的词量，这可能说明前者有更好的鲁棒性。&lt;/p&gt;
+&lt;p&gt;之后作者对语义规则做了类似的测试，上文提到的SemEval-2012 Task 2，使用task中Spearman’s rank correlation coefﬁcient ρ 和 MaxDiff accuracy两个用例，有79组词性关系，其中10组用于训练，69组词组关系作为测试集，实验得到结果如图Table4：&lt;br /&gt;
+&lt;center&gt;&lt;img alt="" src="http://cl.ly/YIMa/cbow-exp_2_10.jpg" /&gt;&lt;/center&gt;&lt;/p&gt;
+&lt;p&gt;可以发现虽然RNN模型并未特意为这个任务采取训练或调整，相比其他模型仍具有最好的效果，同时观察到其准确率随着词向量维度增加而增长。&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</summary><category term="NLP"></category><category term="word2vec"></category><category term="Mikolov"></category></entry><entry><title>Distributed Representations of Words and Phrases and their Compositionality 阅读笔记</title><link href="http://www.liustrive.com/pages/2014/07/26/distributed-representations-of-words-and-phrases-and-their-compositionality-yue-du-bi-ji.html" rel="alternate"></link><updated>2014-07-26T12:12:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-26:pages/2014/07/26/distributed-representations-of-words-and-phrases-and-their-compositionality-yue-du-bi-ji.html</id><summary type="html">&lt;h6&gt;via: &lt;a href="http://www.liustrive.com"&gt;liustrive.com&lt;/a&gt;&lt;/h6&gt;
 &lt;p&gt;文章提出了一些对Skp-gram模型的扩展，提出一种NCE（Noise Contrastive Estimation ）方法用以代替上文hierarchical softmax方法，从而获得更高的效率和对高频词的更好的词向量结果。
 文中提到词向量表示的一大弊端是它们无法表示一些词组成的常用短语，这短语不是字面上把其组成词连接起来的意义，于是提出扩展，将基于词的模型变成基于短语的模型，扩展的原理是先抓出这些短语，然后把这些短语作为整体的“词”加入训练集，然后使用上文实验部分中提到的方法，利用词向量代数运算验证准确性。&lt;/p&gt;
 &lt;h4&gt;&lt;strong&gt;The Skip-gram Model&lt;/strong&gt;&lt;/h4&gt;
@@ -76,7 +268,7 @@
         "}); ";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="NLP"></category><category term="word2vec"></category><category term="Mikolov"></category></entry><entry><title>Efﬁcient Estimation of Word Representations in Vector Space 阅读笔记</title><link href="http://www.liustrive.com/pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html" rel="alternate"></link><updated>2014-07-25T15:51:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-25:pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html</id><summary type="html">&lt;h6&gt;via: &lt;a href="www.liustrive.com"&gt;liustrive.com&lt;/a&gt;&lt;/h6&gt;
+&lt;/script&gt;</summary><category term="NLP"></category><category term="word2vec"></category><category term="Mikolov"></category></entry><entry><title>Efﬁcient Estimation of Word Representations in Vector Space 阅读笔记</title><link href="http://www.liustrive.com/pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html" rel="alternate"></link><updated>2014-07-25T15:51:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-25:pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html</id><summary type="html">&lt;h6&gt;via: &lt;a href="http://www.liustrive.com"&gt;liustrive.com&lt;/a&gt;&lt;/h6&gt;
 &lt;h4&gt;&lt;strong&gt;背景&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;现有模型，比如前文Bengio的采用非线性激活函数tanh的神经网络模型，虽然准确度上有优势，但是算法的复杂度较高，无法训练更大的数据集，比如特征向量维度为50-100情况下训练超过几百兆个的语料。&lt;/p&gt;
 &lt;h4&gt;&lt;strong&gt;目标&lt;/strong&gt;&lt;/h4&gt;
@@ -157,7 +349,7 @@ RNNLM效果最差，虽然NNLM的非线性隐藏层理论上提供更高的精�
         "}); ";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</summary><category term="NLP"></category><category term="word2vec"></category><category term="Mikolov"></category></entry><entry><title>A Neural Probabilistic Language Model 入门笔记</title><link href="http://www.liustrive.com/pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html" rel="alternate"></link><updated>2014-07-12T00:29:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-12:pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html</id><summary type="html">&lt;h5&gt;Via:  &lt;a href="www.liustrive.com"&gt;liusrive.com&lt;/a&gt;&lt;/h5&gt;
+&lt;/script&gt;</summary><category term="NLP"></category><category term="word2vec"></category><category term="Mikolov"></category></entry><entry><title>A Neural Probabilistic Language Model 入门笔记</title><link href="http://www.liustrive.com/pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html" rel="alternate"></link><updated>2014-07-12T00:29:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-12:pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html</id><summary type="html">&lt;h5&gt;Via:  &lt;a href="http://www.liustrive.com"&gt;liusrive.com&lt;/a&gt;&lt;/h5&gt;
 &lt;hr /&gt;
 &lt;h2&gt;&lt;strong&gt;目标：&lt;/strong&gt;&lt;/h2&gt;
 &lt;p&gt;&lt;strong&gt;learn the joint probability function of sequences of words in a language&lt;/strong&gt;&lt;/p&gt;

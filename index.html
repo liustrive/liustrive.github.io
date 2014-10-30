@@ -60,8 +60,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2014/07/26/distributed-representations-of-words-and-phrases-and-their-compositionality-yue-du-bi-ji.html"><h1>Distributed Representations of Words and Phrases and their Compositionality 阅读笔记</h1></a>
-2014-07-26
+            <a href="./pages/2014/07/29/word2vec-code-yue-du-bi-ji.html"><h1>Word2vec Code 阅读笔记</h1></a>
+2014-07-29
 
 by <a class="url fn" href="./author/leon.html">Leon</a>
  
@@ -70,57 +70,115 @@ by <a class="url fn" href="./author/leon.html">Leon</a>
  
         </div>
         
-        <div><h6>via: <a href="www.liustrive.com">liustrive.com</a></h6>
-<p>文章提出了一些对Skp-gram模型的扩展，提出一种NCE（Noise Contrastive Estimation ）方法用以代替上文hierarchical softmax方法，从而获得更高的效率和对高频词的更好的词向量结果。
-文中提到词向量表示的一大弊端是它们无法表示一些词组成的常用短语，这短语不是字面上把其组成词连接起来的意义，于是提出扩展，将基于词的模型变成基于短语的模型，扩展的原理是先抓出这些短语，然后把这些短语作为整体的“词”加入训练集，然后使用上文实验部分中提到的方法，利用词向量代数运算验证准确性。</p>
-<h4><strong>The Skip-gram Model</strong></h4>
-<p>上文介绍过skip-gram模型的结构，给定一句由训练词{w1,w2,w3…wT}，其目标是最大化平均对数概率，c为目标词的前后上下文长度
- <div class="math">$$\frac{1}{T}\sum_{t=1}^T \sum_{-c\leq j \leq c, j\neq0} \log p(w_{t+j}|w_t)$$</div>
-其中，<span class="math">\(p(w_{t+j} | w_t)\)</span> 用softmax函数计算：
- <div class="math">$$\hat{p}(w_t|w_{t-1},...,w_{t-n+1}) = \frac{e^{y_{w_t}}}{\sum_i e^{y_i}}$$</div>
+        <div><h6>via: <a href="http://www.liustrive.com">liustrive.com</a></h6>
+<h4><strong>参数：</strong></h4>
+<div class="highlight"><pre><span class="n">hs</span>
+<span class="n">negative</span>
+<span class="kt">int</span> <span class="n">binary</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cbow</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">debug_mode</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">window</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">min_count</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">num_threads</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">min_reduce</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// window是训练时前后文长度随机数的边界，其它参数看名字</span>
+<span class="n">layer1_size</span>  <span class="c1">// 向量维度</span>
+</pre></div>
+
+
+<h4><strong>结构：</strong></h4>
+<p>基本词结构体</p>
+<div class="highlight"><pre><span class="k">struct</span> <span class="n">vocab_word</span> <span class="p">{</span>
+  <span class="kt">long</span> <span class="kt">long</span> <span class="n">cn</span><span class="p">;</span> <span class="c1">// 词频数</span>
+  <span class="kt">int</span> <span class="o">*</span><span class="n">point</span><span class="p">;</span>   <span class="c1">// root 到该节点的路径，存的是路径节点索引</span>
+  <span class="kt">char</span> <span class="o">*</span><span class="n">word</span><span class="p">,</span> <span class="c1">// 词串</span>
+<span class="o">*</span><span class="n">code</span><span class="p">,</span> <span class="c1">// Huffman编码</span>
+<span class="n">codelen</span><span class="p">;</span> <span class="c1">// Huffman码长度</span>
+<span class="p">};</span>
+</pre></div>
+
+
+<h4><strong>全局变量：</strong></h4>
+<p><strong>struct vocab_word *vocab; // 词表</strong>   </p>
+<p>值得注意的是词表的内存是1000为单位递增扩大的，相关代码：  </p>
+<div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">vocab_size</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">&gt;=</span> <span class="n">vocab_max_size</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">vocab_max_size</span> <span class="o">+=</span> <span class="mi">1000</span><span class="p">;</span>
+<span class="n">vocab</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">vocab_word</span> <span class="o">*</span><span class="p">)</span><span class="n">realloc</span><span class="p">(</span><span class="n">vocab</span><span class="p">,</span> <span class="n">vocab_max_size</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">vocab_word</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p><strong>int *vocab_hash; // 词hash码对应词下标的数组</strong><br />
+ vocab_hash[hashcode] –&gt; index<br />
+需要注意的是word2vec采用的是标准hash table存放方式，hash码重复后挨着放
+取的时候根据拿出index找到词表里真正单词，跟比一下<br />
+<strong>syn0</strong> <br />
+就是词向量的大矩阵，第i行表示vocab中下标为i的词<br />
+<strong>syn1</strong> <br />
+用hs算法时用到的辅助矩阵，即文章中的Wx<br />
+<strong>syn1neg </strong><br />
+negative sampling算法时用到的辅助矩阵</p>
+<p><strong>Next_random</strong><br />
+作者自己生成的随机数，线程里面初始化就是：</p>
+<div class="highlight"><pre><span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span> <span class="n">next_random</span> <span class="o">=</span> <span class="p">(</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)</span><span class="n">id</span><span class="p">;</span>
+</pre></div>
+
+
+<p>更新用的：</p>
+<div class="highlight"><pre><span class="n">next_random</span> <span class="o">=</span> <span class="n">next_random</span> <span class="o">*</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span><span class="p">)</span><span class="mi">25214903917</span> <span class="o">+</span> <span class="mi">11</span><span class="p">;</span>
+</pre></div>
+
+
+<p>伪随机伪到家了=_=  </p>
+<p><strong>expTable</strong><br />
+直接用一个数组记录指数值，要用的时候直接查近似值，不用算，其初始化代码如下：</p>
+<div class="highlight"><pre>  <span class="n">expTable</span> <span class="o">=</span> <span class="p">(</span><span class="n">real</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">((</span><span class="n">EXP_TABLE_SIZE</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">real</span><span class="p">));</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">EXP_TABLE_SIZE</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">expTable</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp</span><span class="p">((</span><span class="n">i</span> <span class="o">/</span> <span class="p">(</span><span class="n">real</span><span class="p">)</span><span class="n">EXP_TABLE_SIZE</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">MAX_EXP</span><span class="p">);</span> 
+    <span class="n">expTable</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">expTable</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">expTable</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>         <span class="c1">// Precompute f(x) = x / (x + 1)</span>
+  <span class="p">}</span>
+</pre></div>
+
+
+<p><strong>vocab_size</strong><br />
+ 词表大小</p>
+<h4><strong>函数: </strong></h4>
+<p><strong>void InitNet()</strong><br />
+主要承担初始化、开内存、建Huffman树的任务，为syn0,syn1（采用HS时）,syn1neg（采用negative时）开内存，其中syn0用-0.005~0.005之间的数随机初始化</p>
+<p><strong>void CreateBinaryTree()</strong><br />
+创建Huffman树，以词频为权重，于是词频越高的词Huffman code越短
+基本流程与Huffman建树算法一致，但是代码很优雅</p>
+<p><strong>void <em>TrainModelThread(void </em>id)</strong><br />
+SubSample 相关代码<br />
+<center><img alt="" src="http://cl.ly/YHt5/codeblock_1.jpg" /></center><br />
+一定概率扔掉高频词，词频越高discard概率越大。</p>
+<h4><strong>代码</strong></h4>
+<p>neu1 隐层矩阵 neu1[i]为隐层向量，</p>
+<p><strong>CBOW</strong><br />
+b = next_random % window; <br />
+<center><img alt="" src="http://cl.ly/YHYn/codeblock_2.jpg" /></center>
+CBOW模型采取的是将一个随机大小的窗口中文本向量相加获得隐层向量</p>
+<p><strong>HS</strong><br />
+<center><img alt="" src="http://cl.ly/YHhB/codeblock_3.jpg" /></center><br />
+其中，f是 <span class="math">\(σ(neu1^T  ×syn1)\)</span> ，l2是父节点索引<br />
+<span class="math">\(f \leftarrow p(x)\)</span><br />
+交叉熵L为： <br />
+<span class="math">\(xlogp(x)+(1-x)*log(1-p(x))\)</span><br />
+其中<br />
+<span class="math">\(p(x) =\frac{exp(neu1[c] * syn1[c + l2])}{(1+exp(neu1[c] * syn1[c + l2]))}\)</span><br />
+于是有：<br />
+<div class="math">$$log(L) = code[d]* neu1[c] * syn1[c + l2] –(1-code[d])*log(1 + exp(neu1[c] * syn1[c + l2]))$$</div>
 <br />
-即：
- <div class="math">$$p(w_O| w_I) = \frac{exp({v'}_{w_O} {}^{\mathrm{T}} v_{w_I})}{\sum_{w=1}^W exp(v'_w {}^{\mathrm{T}}v_{w_I})}$$</div>
+求对syn1的偏导：<br />
+<div class="math">$$\frac{(∂log(L))}{∂syn1}= (1 -code - p(x))*neu1$$</div>
+<br />
+对neu1求偏导：<br />
+<div class="math">$$neu1e=  \frac{(∂log(L))}{∂neu1}= (1 -code - p(x))*syn1$$</div>
 </p>
-<h4><strong>Hierarchical Softmax</strong></h4>
-<p>Hierarchical Softmax是full softmax的一种计算量优化，其目标是减少计算：<br />
-<div class="math">$$p(A|C) = \frac{e^{-E(A,C)}}{\sum_{v=1}^V e^{-E(wv,C)}}$$</div>
-时所需的巨大计算量，使其运算量从计算|V|个输出节点变成log|V|
-其推导过程如下：<br />
-<center><img alt="" src="http://cl.ly/YFsO/cbow-exp_2_1.jpg" /></center></p>
-<h4><strong>Negative Sampling</strong></h4>
-<p>文章提出一种代替hierarchical softmax的方法（NCE），NCE能够求出softmax的对数概率函数近似最大，由于skip-gram模型只关心词向量的质量，所以在保证词向量准确性的条件下，还可以进一步简化NCE，文章定义了NCG方法：
-每个$\log p(W_O | W_I) $的运算被下式替代：<br />
-<div class="math">$$\log \sigma ({v'}_{w_O} {}^{\mathrm{T}}v_{w_I}) + \sum_{i=1}^{k} E_{w_i \sim P_n(w)}\log \sigma(-{v'}_{w_i} {}^{\mathrm{T}}v_{w_I})]$$</div>
-<br />
-其中k是为每个数据样本选用k个负类样本，在小的数据集时可以取5-20，大的数据集甚至取2-5就够用，Negative sampling 和NCE的主要区别是NCE同时需要样本和噪声分布的数值概率 ？  </p>
-<h4><strong>Subsampling of Frequent Words</strong></h4>
-<p>在大型的语料中，一些词会有非常高的词频，比如the, a , in 这种类型词，但是这种高频词往往比一些低频词提供更少的有效信息，所以为了逆转这种不平衡性，文章提出一种二次抽样方法：<br />
-<div class="math">$$P(w_i) = 1-\sqrt{\frac{t}{f(w_i)}}$$</div>
-其中<span class="math">\(f(w_i)\)</span>是词<span class="math">\(w_i\)</span>的词频，t是预设的阈值，词频高于t的<span class="math">\(w_i\)</span> 具有<span class="math">\(P(w_i)\)</span>的概率被抛弃。</p>
-<h3><strong>实验部分：</strong></h3>
-<h4><strong>传统的实验</strong></h4>
-<p>这篇文章的实验任务也采用上文的代数运算准确率衡量，实验描述参见上文Task description 
-文中实验Skip-gram采用10亿数据量的数据集，抛弃词频少于5次的词，实验结果如图Table1
- <center><img alt="" src="http://cl.ly/YFvs/cbow-exp_2_2.jpg" /></center>  </p>
-<p>可以观察到Negative Sampling准确率高于HS算法，比原版的NCE也有少许提升，同时观察到以<span class="math">\(10^{-5}\)</span>为阈值二次采样过滤后，大幅缩短了训练时间，同时少量提升了词向量准确度。</p>
-<h4><strong>短语实验</strong></h4>
-<p>上文提到过，一些由词组成的固定短语并不是其字面意义，于是作者抓出这些固定短句，并以其为整体加入词库而不是拆分成单个的词，抓出这些词的具体方法是：<br />
-<div class="math">$$score(w_i,w_j) = \frac{count(w_i,w_j)-\delta}{count(w_i)\times count(w_j)}$$</div>
-基本上就是词以固定形式出现的次数减去一个折扣系数与他们各自出现频率的比值，已决定这个短语的权值，最后权值超过预设的阈值的短语被取出作为固定短语，文中实验采用递降的阈值对训练集跑了2-4次这样的取短语操作，使长固定短语也能被抓出<br />
-<center><img alt="" src="http://cl.ly/YGDD/cbow-exp_2_3.jpg" /></center></p>
-<p>这里具体怎么个2-4次法，前次的输出作为后次的数据集还是什么，文中没说清。</p>
-<p>而后作者设计了针对固定短语的实验，与前文代数运算实验相近，只是测试用例变成：
-组成固定短语的词 →固定短语
-的关系，采用的样例如Table2：<br />
-<center><img alt="" src="http://cl.ly/YF8x/cbow-exp_2_4.jpg" /></center>
-根据此类测试用例，实验这对固定短语的词向量代数运算，数据集仍然采用10亿词量大小的Google News，并向词库加入抓取出的固定短语，实验结果发现，HS经过subsampling后具有最好的准确性，这表明subsampling不但能提升训练速度，也能提升一些情况下的准确率。
-为了最大化这个固定短语词向量的准确性，另外的实验采用了1000维n=全句的HS算法，并采用330亿词数的数据集，模型准确率达到了72%，而数据集降到6B时，准确率为66%，说明训练数据的规模对词向量的准确率是决定性的。</p>
-<h4><strong>Additive Compositionality</strong></h4>
-<p>文章最后还讨论了词向量的加法语义合成，如Table4所示：<br />
- <center><img alt="" src="http://cl.ly/YGCO/cbow-exp_2_5.jpg" /></center><br />
-词向量加法能得到与相加的两词语义最接近的词或短语，这主要是因为在训练过程中，相加的两词有更大可能与结果短语或词在同一句中，比如“中国”+“首都”= “北京”</p>
-<p>文章最后横向与相近工作的其它模型做了比较，比较训练时间以及词向量的准确率，结果表明Skip-gram phrase model 具有最快的训练时间（随着数据集规模的增长只有少量时间增加）和很好的准确性。</p>
+<p>所以g是梯度乘以学习速率中的公因子</p>
+<p><strong>Negative Sampling 代码</strong>
+ <center><img alt="" src="http://cl.ly/YIE4/codeblock_4.jpg" /></center>
+采取negative次生成负样本，当negative为0时选word自己作为正样本，当抽到word自己时跳过<br />
+抽取的负样本label为0，可以看做HS中的一层
+于是有<br />
+<div class="math">$$交叉熵 = -label \times \log f - (1-label)\times (1-f)$$</div>
+</p>
+<p><strong>隐藏层到输入层：</strong><br />
+<center><img alt="" src="http://cl.ly/YHcD/codeblock_5.jpg" /></center> <br />
+前面用的输入层向量相加得到隐层向量，于是对词向量的更新可以直接用梯度neu1e[c]</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var mathjaxscript = document.createElement('script');
     mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
@@ -158,6 +216,62 @@ by <a class="url fn" href="./author/leon.html">Leon</a>
  
 
     <div class='article'>
+        <a href="./pages/2014/07/27/linguistic-regularities-in-continuous-space-word-representations-yue-du-bi-ji.html"><h2>Linguistic Regularities in Continuous Space Word Representations 阅读笔记</h2></a>
+        <div class= "well small"> 2014-07-27
+
+by <a class="url fn" href="./author/leon.html">Leon</a>
+ 
+
+
+ </div>
+        <div class="summary"><h6>via: <a href="http://www.liustrive.com">liustrive.com</a></h6>
+<p>这篇文章主要就是介绍词向量支持基本代数运算的特性，并利用这一特性将之应用到SemEval 2012 Task 来衡量。<br />
+<strong>背景：</strong><br />
+<a href="http://www.cs.york.ac.uk/semeval-2012/index.php?id=tasks">SemEval 2012 task</a></p>
+<h4><strong>Recurrent Neural Network Model</strong></h4>
+<p>RNNLM模型由输入层、带有循环连接以及对应权重矩阵的隐藏层、输出层构成，如下图：<br />
+<center><img alt="" src="http://cl.ly/YFxq/RNN.jpg" /></center>
+输入是词表V大小|V|维向量，W(t)表示时间t输入的用1-of-N编码表示的词，输出层y(t)产生词的概率分布，维度也是|V|，隐藏层s(t)维护一个句子出现历史的描述，隐层到输出层采用如下计算：<br />
+<center><img alt="" src="http://cl.ly/YIRB/cbow-exp_2_6.jpg" /></center><br />
+训练产出中词向量保存在参数矩阵U中，模型训练采用后向传播的最大化对数似然函数方法。</p>
+<h4><strong>实验部分</strong></h4>
+<h5><strong>测试集</strong></h5>
+<p><strong>Syntactic Test Set</strong><br />
+词向量的语法规则测试集如下图Table1<br />
+<center><img alt="" src="http://cl.ly/YIAi/cbow-exp_2_7.jpg" /></center></p>
+<p>作者采用Penn Treebank POS tags对报纸新闻文本做标记，选取词频最高的前100组（JJ/JJR ...</p> <a class="btn btn-info xsmall" href="./pages/2014/07/27/linguistic-regularities-in-continuous-space-word-representations-yue-du-bi-ji.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2014/07/26/distributed-representations-of-words-and-phrases-and-their-compositionality-yue-du-bi-ji.html"><h2>Distributed Representations of Words and Phrases and their Compositionality 阅读笔记</h2></a>
+        <div class= "well small"> 2014-07-26
+
+by <a class="url fn" href="./author/leon.html">Leon</a>
+ 
+
+
+ </div>
+        <div class="summary"><h6>via: <a href="http://www.liustrive.com">liustrive.com</a></h6>
+<p>文章提出了一些对Skp-gram模型的扩展，提出一种NCE（Noise Contrastive Estimation ）方法用以代替上文hierarchical softmax方法，从而获得更高的效率和对高频词的更好的词向量结果。
+文中提到词向量表示的一大弊端是它们无法表示一些词组成的常用短语，这短语不是字面上把其组成词连接起来的意义，于是提出扩展，将基于词的模型变成基于短语的模型，扩展的原理是先抓出这些短语，然后把这些短语作为整体的“词”加入训练集，然后使用上文实验部分中提到的方法，利用词向量代数运算验证准确性。</p>
+<h4><strong>The Skip-gram Model</strong></h4>
+<p>上文介绍过skip-gram模型的结构，给定一句由训练词{w1,w2,w3…wT}，其目标是最大化平均对数概率，c为目标词的前后上下文长度
+ <div class="math">$$\frac{1}{T}\sum_{t=1}^T \sum_{-c\leq j \leq c, j\neq0} \log p(w_ ...</div></p> <a class="btn btn-info xsmall" href="./pages/2014/07/26/distributed-representations-of-words-and-phrases-and-their-compositionality-yue-du-bi-ji.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html"><h2>Efﬁcient Estimation of Word Representations in Vector Space 阅读笔记</h2></a>
         <div class= "well small"> 2014-07-25
 
@@ -166,7 +280,7 @@ by <a class="url fn" href="./author/leon.html">Leon</a>
 
 
  </div>
-        <div class="summary"><h6>via: <a href="www.liustrive.com">liustrive.com</a></h6>
+        <div class="summary"><h6>via: <a href="http://www.liustrive.com">liustrive.com</a></h6>
 <h4><strong>背景</strong></h4>
 <p>现有模型，比如前文Bengio的采用非线性激活函数tanh的神经网络模型，虽然准确度上有优势，但是算法的复杂度较高，无法训练更大的数据集，比如特征向量维度为50-100情况下训练超过几百兆个的语料。</p>
 <h4><strong>目标</strong></h4>
@@ -195,7 +309,7 @@ by <a class="url fn" href="./author/leon.html">Leon</a>
 
 
  </div>
-        <div class="summary"><h5>Via:  <a href="www.liustrive.com">liusrive.com</a></h5>
+        <div class="summary"><h5>Via:  <a href="http://www.liustrive.com">liusrive.com</a></h5>
 <hr />
 <h2><strong>目标：</strong></h2>
 <p><strong>learn the joint probability function of sequences of words in a language</strong></p>
@@ -206,56 +320,6 @@ by <a class="url fn" href="./author/leon.html">Leon</a>
 Curse of dimensionality 维数灾难<br />
 具体表现为：<br />
 <em>a word sequence on which the model will be tested is likely to be different from all the word sequences ...</em></p> <a class="btn btn-info xsmall" href="./pages/2014/07/12/a-neural-probabilistic-language-model-ru-men-bi-ji.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/05/12/corona-bi-ji.html"><h2>Corona 笔记</h2></a>
-        <div class= "well small"> 2013-05-12
-
-by <a class="url fn" href="./author/leon.html">Leon</a>
- 
-
-
- </div>
-        <div class="summary"><h3>Corona 初探</h3>
-<p>本周关注了一下另一种号称下一代MapReduce的框架：<strong>Corona</strong>。它是facebook的开源框架，代码在：</p>
-<p><a href="https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona">https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona</a> </p>
-<p>Cornna的设计需求与Apache的YARN框架十分相似，它的发布文档：</p>
-<p>“<a href="http://www.jorditorres.org/wp-content/uploads/2012/11/CC-MEI-Corona-AntonioRodriguez.pdf">Under the Hood: Scheduling MapReduce jobs more efficiently with Corona</a>”</p>
-<p>其中提到，当前Map-Reduce所使用的single Job Tracker在Facebook的运行环境下已经遇到瓶颈，在Hadoop Corona中，集群的资源是由central Cluster Manager统一分配调度，每个job拥有各自单独的Corona Job Tracker，这些与YARN框架的设计思路非常相近，解决了Map-Reduce中存在的扩展性、单点故障等不足。</p>
-<p>相比于YARN，Corona似乎更贴近Map-Reduce的原版，其代码在原版Map-Reduce基础上修改而来，似乎更贴近原有Map-Reduce的用户；另一大优势在于Corona所采用的Push-based通信机制，在原版Map-Reduce和YARN中，采用轮询方式使client获取信息 ...</p> <a class="btn btn-info xsmall" href="./pages/2013/05/12/corona-bi-ji.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/04/06/network-aware-resource-allocation-in-distributed-clouds-bi-ji.html"><h2>Network Aware Resource Allocation in Distributed Clouds 笔记</h2></a>
-        <div class= "well small"> 2013-04-06
-
-by <a class="url fn" href="./author/leon.html">Leon</a>
- 
-
-
- </div>
-        <div class="summary"><p>INFOCOM 2012 </p>
-<p>Mansoor Alicherry, T.V. Lakshman</p>
-<p>Bell Labs. </p>
-<p>这篇文章主要介绍了通讯负载和延迟最小化的高效的resource allocation算法。</p>
-<p>Key contribution：</p>
-<ol>
-<li>Develop an efficient 2-approximation algorithm for the optimal selection of data centers in the distributed cloud.</li>
-<li>Use of an optimal algorithm for rack and server selection.</li>
-<li>develop a heuristic for partitioning the requested resources for the task ...</li></ol> <a class="btn btn-info xsmall" href="./pages/2013/04/06/network-aware-resource-allocation-in-distributed-clouds-bi-ji.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

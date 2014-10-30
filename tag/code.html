@@ -209,96 +209,11 @@ CBOW模型采取的是将一个随机大小的窗口中文本向量相加获得�
         <hr />
     </div>
 		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/07/27/linguistic-regularities-in-continuous-space-word-representations-yue-du-bi-ji.html"><h2>Linguistic Regularities in Continuous Space Word Representations 阅读笔记</h2></a>
-        <div class= "well small"> 2014-07-27
-
-by <a class="url fn" href="../author/leon.html">Leon</a>
- 
-
-
- </div>
-        <div class="summary"><h6>via: <a href="http://www.liustrive.com">liustrive.com</a></h6>
-<p>这篇文章主要就是介绍词向量支持基本代数运算的特性，并利用这一特性将之应用到SemEval 2012 Task 来衡量。<br />
-<strong>背景：</strong><br />
-<a href="http://www.cs.york.ac.uk/semeval-2012/index.php?id=tasks">SemEval 2012 task</a></p>
-<h4><strong>Recurrent Neural Network Model</strong></h4>
-<p>RNNLM模型由输入层、带有循环连接以及对应权重矩阵的隐藏层、输出层构成，如下图：<br />
-<center><img alt="" src="http://cl.ly/YFxq/RNN.jpg" /></center>
-输入是词表V大小|V|维向量，W(t)表示时间t输入的用1-of-N编码表示的词，输出层y(t)产生词的概率分布，维度也是|V|，隐藏层s(t)维护一个句子出现历史的描述，隐层到输出层采用如下计算：<br />
-<center><img alt="" src="http://cl.ly/YIRB/cbow-exp_2_6.jpg" /></center><br />
-训练产出中词向量保存在参数矩阵U中，模型训练采用后向传播的最大化对数似然函数方法。</p>
-<h4><strong>实验部分</strong></h4>
-<h5><strong>测试集</strong></h5>
-<p><strong>Syntactic Test Set</strong><br />
-词向量的语法规则测试集如下图Table1<br />
-<center><img alt="" src="http://cl.ly/YIAi/cbow-exp_2_7.jpg" /></center></p>
-<p>作者采用Penn Treebank POS tags对报纸新闻文本做标记，选取词频最高的前100组（JJ/JJR ...</p> <a class="btn btn-info xsmall" href="../pages/2014/07/27/linguistic-regularities-in-continuous-space-word-representations-yue-du-bi-ji.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/07/26/distributed-representations-of-words-and-phrases-and-their-compositionality-yue-du-bi-ji.html"><h2>Distributed Representations of Words and Phrases and their Compositionality 阅读笔记</h2></a>
-        <div class= "well small"> 2014-07-26
-
-by <a class="url fn" href="../author/leon.html">Leon</a>
- 
-
-
- </div>
-        <div class="summary"><h6>via: <a href="http://www.liustrive.com">liustrive.com</a></h6>
-<p>文章提出了一些对Skp-gram模型的扩展，提出一种NCE（Noise Contrastive Estimation ）方法用以代替上文hierarchical softmax方法，从而获得更高的效率和对高频词的更好的词向量结果。
-文中提到词向量表示的一大弊端是它们无法表示一些词组成的常用短语，这短语不是字面上把其组成词连接起来的意义，于是提出扩展，将基于词的模型变成基于短语的模型，扩展的原理是先抓出这些短语，然后把这些短语作为整体的“词”加入训练集，然后使用上文实验部分中提到的方法，利用词向量代数运算验证准确性。</p>
-<h4><strong>The Skip-gram Model</strong></h4>
-<p>上文介绍过skip-gram模型的结构，给定一句由训练词{w1,w2,w3…wT}，其目标是最大化平均对数概率，c为目标词的前后上下文长度
- <div class="math">$$\frac{1}{T}\sum_{t=1}^T \sum_{-c\leq j \leq c, j\neq0} \log p(w_ ...</div></p> <a class="btn btn-info xsmall" href="../pages/2014/07/26/distributed-representations-of-words-and-phrases-and-their-compositionality-yue-du-bi-ji.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html"><h2>Efﬁcient Estimation of Word Representations in Vector Space 阅读笔记</h2></a>
-        <div class= "well small"> 2014-07-25
-
-by <a class="url fn" href="../author/leon.html">Leon</a>
- 
-
-
- </div>
-        <div class="summary"><h6>via: <a href="http://www.liustrive.com">liustrive.com</a></h6>
-<h4><strong>背景</strong></h4>
-<p>现有模型，比如前文Bengio的采用非线性激活函数tanh的神经网络模型，虽然准确度上有优势，但是算法的复杂度较高，无法训练更大的数据集，比如特征向量维度为50-100情况下训练超过几百兆个的语料。</p>
-<h4><strong>目标</strong></h4>
-<p>提出一种模型使其能够训练百万级词表下数十亿词量的训练集，并产出优质词特征向量。</p>
-<h4><strong>Model Architectures </strong></h4>
-<h5><strong>Feedforward Neural Net Language Model (NNLM)</strong></h5>
-<p>此即前文所述前向神经网络语言模型，采用四层神经网络（原文讲实际是三层神经网络）
-输入层、投影层、隐藏层、输出层
-每个训练样本的计算复杂度为：
-<div class="math">$$Q = N × D + N × D × H + H × V$$</div>
-其中，N为n-gram模型中n值，D为词向量维度，H是隐藏层size（通常500-1000），V是词表大小，同时也是输出层的节点数量，N<em>D为输入层到投影层权重个数，H</em>V表示隐藏层到输出层的权重个数，N<em>D ...</em></p> <a class="btn btn-info xsmall" href="../pages/2014/07/25/efficient-estimation-of-word-representations-in-vector-space-yue-du-bi-ji.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
 
-    <li class="active"><a href="../tag/word2vec.html">1</a></li>
+    <li class="active"><a href="../tag/code.html">1</a></li>
 
     <li class="next disabled"><a href="#">&rarr; Next</a></li>
 
