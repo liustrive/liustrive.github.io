@@ -154,12 +154,15 @@ CBOW模型采取的是将一个随机大小的窗口中文本向量相加获得�
 <p><strong>HS</strong><br />
 <center><img alt="" src="http://cl.ly/YHhB/codeblock_3.jpg" /></center><br />
 其中，f是 <span class="math">\(σ(neu1^T  ×syn1)\)</span> ，l2是父节点索引<br />
-<span class="math">\(f \leftarrow p(x)\)</span><br />
-交叉熵L为： <br />
-<span class="math">\(xlogp(x)+(1-x)*log(1-p(x))\)</span><br />
-其中<br />
-<span class="math">\(p(x) =\frac{exp(neu1[c] * syn1[c + l2])}{(1+exp(neu1[c] * syn1[c + l2]))}\)</span><br />
-于是有：<br />
+<div class="math">$$f \leftarrow p(x)$$</div>
+</p>
+<p>交叉熵L为： <br />
+<div class="math">$$xlogp(x)+(1-x)*log(1-p(x))$$</div>
+</p>
+<p>其中<br />
+<div class="math">$$p(x) =\frac{exp(neu1[c] * syn1[c + l2])}{(1+exp(neu1[c] * syn1[c + l2]))}$$</div>
+</p>
+<p>于是有：<br />
 <div class="math">$$log(L) = code[d]* neu1[c] * syn1[c + l2] –(1-code[d])*log(1 + exp(neu1[c] * syn1[c + l2]))$$</div>
 <br />
 求对syn1的偏导：<br />
@@ -168,7 +171,7 @@ CBOW模型采取的是将一个随机大小的窗口中文本向量相加获得�
 对neu1求偏导：<br />
 <div class="math">$$neu1e=  \frac{(∂log(L))}{∂neu1}= (1 -code - p(x))*syn1$$</div>
 </p>
-<p>所以g是梯度乘以学习速率中的公因子</p>
+<p>所以g是梯度乘以学习速率中的公因子。</p>
 <p><strong>Negative Sampling 代码</strong>
  <center><img alt="" src="http://cl.ly/YIE4/codeblock_4.jpg" /></center>
 采取negative次生成负样本，当negative为0时选word自己作为正样本，当抽到word自己时跳过<br />
