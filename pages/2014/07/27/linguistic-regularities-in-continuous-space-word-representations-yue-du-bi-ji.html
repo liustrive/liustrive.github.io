@@ -68,14 +68,14 @@ by <a class="url fn" href="../../../../author/leon.html">Leon</a>
 <p>这篇文章主要就是介绍词向量支持基本代数运算的特性，并利用这一特性将之应用到SemEval 2012 Task 来衡量。<br />
 <strong>背景：</strong><br />
 <a href="http://www.cs.york.ac.uk/semeval-2012/index.php?id=tasks">SemEval 2012 task</a></p>
-<h4><strong>Recurrent Neural Network Model</strong></h4>
+<h3><strong>Recurrent Neural Network Model</strong></h3>
 <p>RNNLM模型由输入层、带有循环连接以及对应权重矩阵的隐藏层、输出层构成，如下图：<br />
 <center><img alt="" src="http://cl.ly/YFxq/RNN.jpg" /></center>
 输入是词表V大小|V|维向量，W(t)表示时间t输入的用1-of-N编码表示的词，输出层y(t)产生词的概率分布，维度也是|V|，隐藏层s(t)维护一个句子出现历史的描述，隐层到输出层采用如下计算：<br />
 <center><img alt="" src="http://cl.ly/YIRB/cbow-exp_2_6.jpg" /></center><br />
 训练产出中词向量保存在参数矩阵U中，模型训练采用后向传播的最大化对数似然函数方法。</p>
-<h4><strong>实验部分</strong></h4>
-<h5><strong>测试集</strong></h5>
+<h3><strong>实验部分</strong></h3>
+<h4><strong>测试集</strong></h4>
 <p><strong>Syntactic Test Set</strong><br />
 词向量的语法规则测试集如下图Table1<br />
 <center><img alt="" src="http://cl.ly/YIAi/cbow-exp_2_7.jpg" /></center></p>
@@ -86,7 +86,7 @@ by <a class="url fn" href="../../../../author/leon.html">Leon</a>
 这部分主要就是介绍词向量之间的空间规则，比如之前的实验测试了向量：<br />
 <div class="math">$$X_a \rightarrow X_b ≈ X_c \rightarrow X_d$$</div>
 于是计算<span class="math">\(y = X_b – X_a + X_c\)</span>，并寻找离向量y最近的词，观察这个结果是否是<span class="math">\(X_d\)</span>，以及已知<span class="math">\(X_d\)</span>了，计算<span class="math">\(cos(y,d)\)</span></p>
-<h4><strong>实验验证结果</strong></h4>
+<h3><strong>实验验证结果</strong></h3>
 <p>作者使用上文RNNLM模型分别生成了80、320、640、1600维的词向量，其数据集是320M的Broadcase News，词表大小为82k，测试采用上文的测试方式，主要对比对象时LSA得到结果如图Table2<br />
 <center><img alt="" src="http://cl.ly/YHxs/cbow-exp_2_8.jpg" /></center></p>
 <p>可以发现以语法规则的精确性衡量，RNNLM模型词向量精确性上具有优势，而后作者还将RNNLM与其它已知的模型做对比，采用这些模型使用的测试集：6632个问句，36k的词表大小，37M大小的词量，结果如图Table3：<br />

@@ -71,7 +71,7 @@ by <a class="url fn" href="../author/leon.html">Leon</a>
         </div>
         
         <div><h6>via: <a href="http://www.liustrive.com">liustrive.com</a></h6>
-<h4><strong>参数：</strong></h4>
+<h3><strong>参数：</strong></h3>
 <div class="highlight"><pre><span class="n">hs</span>
 <span class="n">negative</span>
 <span class="kt">int</span> <span class="n">binary</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cbow</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">debug_mode</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">window</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">min_count</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">num_threads</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">min_reduce</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// window是训练时前后文长度随机数的边界，其它参数看名字</span>
@@ -79,7 +79,7 @@ by <a class="url fn" href="../author/leon.html">Leon</a>
 </pre></div>
 
 
-<h4><strong>结构：</strong></h4>
+<h3><strong>结构：</strong></h3>
 <p>基本词结构体</p>
 <div class="highlight"><pre><span class="k">struct</span> <span class="n">vocab_word</span> <span class="p">{</span>
   <span class="kt">long</span> <span class="kt">long</span> <span class="n">cn</span><span class="p">;</span> <span class="c1">// 词频数</span>
@@ -91,7 +91,7 @@ by <a class="url fn" href="../author/leon.html">Leon</a>
 </pre></div>
 
 
-<h4><strong>全局变量：</strong></h4>
+<h3><strong>全局变量：</strong></h3>
 <p><strong>struct vocab_word *vocab; // 词表</strong>   </p>
 <p>值得注意的是词表的内存是1000为单位递增扩大的，相关代码：  </p>
 <div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">vocab_size</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">&gt;=</span> <span class="n">vocab_max_size</span><span class="p">)</span> <span class="p">{</span>
@@ -104,12 +104,12 @@ by <a class="url fn" href="../author/leon.html">Leon</a>
 <p><strong>int *vocab_hash; // 词hash码对应词下标的数组</strong><br />
  vocab_hash[hashcode] –&gt; index<br />
 需要注意的是word2vec采用的是标准hash table存放方式，hash码重复后挨着放
-取的时候根据拿出index找到词表里真正单词，跟比一下<br />
-<strong>syn0</strong> <br />
-就是词向量的大矩阵，第i行表示vocab中下标为i的词<br />
-<strong>syn1</strong> <br />
-用hs算法时用到的辅助矩阵，即文章中的Wx<br />
-<strong>syn1neg </strong><br />
+取的时候根据拿出index找到词表里真正单词，跟比一下  </p>
+<p><strong>syn0</strong> <br />
+就是词向量的大矩阵，第i行表示vocab中下标为i的词  </p>
+<p><strong>syn1</strong> <br />
+用hs算法时用到的辅助矩阵，即文章中的Wx </p>
+<p><strong>syn1neg </strong><br />
 negative sampling算法时用到的辅助矩阵</p>
 <p><strong>Next_random</strong><br />
 作者自己生成的随机数，线程里面初始化就是：</p>
@@ -135,7 +135,7 @@ negative sampling算法时用到的辅助矩阵</p>
 
 <p><strong>vocab_size</strong><br />
  词表大小</p>
-<h4><strong>函数: </strong></h4>
+<h3><strong>函数: </strong></h3>
 <p><strong>void InitNet()</strong><br />
 主要承担初始化、开内存、建Huffman树的任务，为syn0,syn1（采用HS时）,syn1neg（采用negative时）开内存，其中syn0用-0.005~0.005之间的数随机初始化</p>
 <p><strong>void CreateBinaryTree()</strong><br />
@@ -145,7 +145,7 @@ negative sampling算法时用到的辅助矩阵</p>
 SubSample 相关代码<br />
 <center><img alt="" src="http://cl.ly/YHt5/codeblock_1.jpg" /></center><br />
 一定概率扔掉高频词，词频越高discard概率越大。</p>
-<h4><strong>代码</strong></h4>
+<h3><strong>代码</strong></h3>
 <p>neu1 隐层矩阵 neu1[i]为隐层向量，</p>
 <p><strong>CBOW</strong><br />
 b = next_random % window; <br />
@@ -228,14 +228,14 @@ by <a class="url fn" href="../author/leon.html">Leon</a>
 <p>这篇文章主要就是介绍词向量支持基本代数运算的特性，并利用这一特性将之应用到SemEval 2012 Task 来衡量。<br />
 <strong>背景：</strong><br />
 <a href="http://www.cs.york.ac.uk/semeval-2012/index.php?id=tasks">SemEval 2012 task</a></p>
-<h4><strong>Recurrent Neural Network Model</strong></h4>
+<h3><strong>Recurrent Neural Network Model</strong></h3>
 <p>RNNLM模型由输入层、带有循环连接以及对应权重矩阵的隐藏层、输出层构成，如下图：<br />
 <center><img alt="" src="http://cl.ly/YFxq/RNN.jpg" /></center>
 输入是词表V大小|V|维向量，W(t)表示时间t输入的用1-of-N编码表示的词，输出层y(t)产生词的概率分布，维度也是|V|，隐藏层s(t)维护一个句子出现历史的描述，隐层到输出层采用如下计算：<br />
 <center><img alt="" src="http://cl.ly/YIRB/cbow-exp_2_6.jpg" /></center><br />
 训练产出中词向量保存在参数矩阵U中，模型训练采用后向传播的最大化对数似然函数方法。</p>
-<h4><strong>实验部分</strong></h4>
-<h5><strong>测试集</strong></h5>
+<h3><strong>实验部分</strong></h3>
+<h4><strong>测试集</strong></h4>
 <p><strong>Syntactic Test Set</strong><br />
 词向量的语法规则测试集如下图Table1<br />
 <center><img alt="" src="http://cl.ly/YIAi/cbow-exp_2_7.jpg" /></center></p>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom"><title>古董Leon</title><link href="http://www.liustrive.com/" rel="alternate"></link><link href="http://www.liustrive.com/feeds%5Call-zh.atom.xml" rel="self"></link><id>http://www.liustrive.com/</id><updated>2014-07-29T09:37:00+08:00</updated><entry><title>Word2vec Code 阅读笔记</title><link href="http://www.liustrive.com/pages/2014/07/29/word2vec-code-yue-du-bi-ji.html" rel="alternate"></link><updated>2014-07-29T09:37:00+08:00</updated><author><name>Leon</name></author><id>tag:www.liustrive.com,2014-07-29:pages/2014/07/29/word2vec-code-yue-du-bi-ji.html</id><summary type="html">&lt;h6&gt;via: &lt;a href="http://www.liustrive.com"&gt;liustrive.com&lt;/a&gt;&lt;/h6&gt;
-&lt;h4&gt;&lt;strong&gt;参数：&lt;/strong&gt;&lt;/h4&gt;
+&lt;h3&gt;&lt;strong&gt;参数：&lt;/strong&gt;&lt;/h3&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;hs&lt;/span&gt;
 &lt;span class="n"&gt;negative&lt;/span&gt;
 &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;binary&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;cbow&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;debug_mode&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;window&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;min_count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;num_threads&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;min_reduce&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="c1"&gt;// window是训练时前后文长度随机数的边界，其它参数看名字&lt;/span&gt;
@@ -8,7 +8,7 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h4&gt;&lt;strong&gt;结构：&lt;/strong&gt;&lt;/h4&gt;
+&lt;h3&gt;&lt;strong&gt;结构：&lt;/strong&gt;&lt;/h3&gt;
 &lt;p&gt;基本词结构体&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;vocab_word&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
   &lt;span class="kt"&gt;long&lt;/span&gt; &lt;span class="kt"&gt;long&lt;/span&gt; &lt;span class="n"&gt;cn&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="c1"&gt;// 词频数&lt;/span&gt;
@@ -20,7 +20,7 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h4&gt;&lt;strong&gt;全局变量：&lt;/strong&gt;&lt;/h4&gt;
+&lt;h3&gt;&lt;strong&gt;全局变量：&lt;/strong&gt;&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;struct vocab_word *vocab; // 词表&lt;/strong&gt;   &lt;/p&gt;
 &lt;p&gt;值得注意的是词表的内存是1000为单位递增扩大的，相关代码：  &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;vocab_size&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="n"&gt;vocab_max_size&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
@@ -33,12 +33,12 @@
 &lt;p&gt;&lt;strong&gt;int *vocab_hash; // 词hash码对应词下标的数组&lt;/strong&gt;&lt;br /&gt;
  vocab_hash[hashcode] –&amp;gt; index&lt;br /&gt;
 需要注意的是word2vec采用的是标准hash table存放方式，hash码重复后挨着放
-取的时候根据拿出index找到词表里真正单词，跟比一下&lt;br /&gt;
-&lt;strong&gt;syn0&lt;/strong&gt; &lt;br /&gt;
-就是词向量的大矩阵，第i行表示vocab中下标为i的词&lt;br /&gt;
-&lt;strong&gt;syn1&lt;/strong&gt; &lt;br /&gt;
-用hs算法时用到的辅助矩阵，即文章中的Wx&lt;br /&gt;
-&lt;strong&gt;syn1neg &lt;/strong&gt;&lt;br /&gt;
+取的时候根据拿出index找到词表里真正单词，跟比一下  &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;syn0&lt;/strong&gt; &lt;br /&gt;
+就是词向量的大矩阵，第i行表示vocab中下标为i的词  &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;syn1&lt;/strong&gt; &lt;br /&gt;
+用hs算法时用到的辅助矩阵，即文章中的Wx &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;syn1neg &lt;/strong&gt;&lt;br /&gt;
 negative sampling算法时用到的辅助矩阵&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Next_random&lt;/strong&gt;&lt;br /&gt;
 作者自己生成的随机数，线程里面初始化就是：&lt;/p&gt;
@@ -64,7 +64,7 @@ negative sampling算法时用到的辅助矩阵&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;vocab_size&lt;/strong&gt;&lt;br /&gt;
  词表大小&lt;/p&gt;
-&lt;h4&gt;&lt;strong&gt;函数: &lt;/strong&gt;&lt;/h4&gt;
+&lt;h3&gt;&lt;strong&gt;函数: &lt;/strong&gt;&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;void InitNet()&lt;/strong&gt;&lt;br /&gt;
 主要承担初始化、开内存、建Huffman树的任务，为syn0,syn1（采用HS时）,syn1neg（采用negative时）开内存，其中syn0用-0.005~0.005之间的数随机初始化&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;void CreateBinaryTree()&lt;/strong&gt;&lt;br /&gt;
@@ -74,7 +74,7 @@ negative sampling算法时用到的辅助矩阵&lt;/p&gt;
 SubSample 相关代码&lt;br /&gt;
 &lt;center&gt;&lt;img alt="" src="http://cl.ly/YHt5/codeblock_1.jpg" /&gt;&lt;/center&gt;&lt;br /&gt;
 一定概率扔掉高频词，词频越高discard概率越大。&lt;/p&gt;
-&lt;h4&gt;&lt;strong&gt;代码&lt;/strong&gt;&lt;/h4&gt;
+&lt;h3&gt;&lt;strong&gt;代码&lt;/strong&gt;&lt;/h3&gt;
 &lt;p&gt;neu1 隐层矩阵 neu1[i]为隐层向量，&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;CBOW&lt;/strong&gt;&lt;br /&gt;
 b = next_random % window; &lt;br /&gt;
@@ -138,14 +138,14 @@ CBOW模型采取的是将一个随机大小的窗口中文本向量相加获得�
 &lt;p&gt;这篇文章主要就是介绍词向量支持基本代数运算的特性，并利用这一特性将之应用到SemEval 2012 Task 来衡量。&lt;br /&gt;
 &lt;strong&gt;背景：&lt;/strong&gt;&lt;br /&gt;
 &lt;a href="http://www.cs.york.ac.uk/semeval-2012/index.php?id=tasks"&gt;SemEval 2012 task&lt;/a&gt;&lt;/p&gt;
-&lt;h4&gt;&lt;strong&gt;Recurrent Neural Network Model&lt;/strong&gt;&lt;/h4&gt;
+&lt;h3&gt;&lt;strong&gt;Recurrent Neural Network Model&lt;/strong&gt;&lt;/h3&gt;
 &lt;p&gt;RNNLM模型由输入层、带有循环连接以及对应权重矩阵的隐藏层、输出层构成，如下图：&lt;br /&gt;
 &lt;center&gt;&lt;img alt="" src="http://cl.ly/YFxq/RNN.jpg" /&gt;&lt;/center&gt;
 输入是词表V大小|V|维向量，W(t)表示时间t输入的用1-of-N编码表示的词，输出层y(t)产生词的概率分布，维度也是|V|，隐藏层s(t)维护一个句子出现历史的描述，隐层到输出层采用如下计算：&lt;br /&gt;
 &lt;center&gt;&lt;img alt="" src="http://cl.ly/YIRB/cbow-exp_2_6.jpg" /&gt;&lt;/center&gt;&lt;br /&gt;
 训练产出中词向量保存在参数矩阵U中，模型训练采用后向传播的最大化对数似然函数方法。&lt;/p&gt;
-&lt;h4&gt;&lt;strong&gt;实验部分&lt;/strong&gt;&lt;/h4&gt;
-&lt;h5&gt;&lt;strong&gt;测试集&lt;/strong&gt;&lt;/h5&gt;
+&lt;h3&gt;&lt;strong&gt;实验部分&lt;/strong&gt;&lt;/h3&gt;
+&lt;h4&gt;&lt;strong&gt;测试集&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;&lt;strong&gt;Syntactic Test Set&lt;/strong&gt;&lt;br /&gt;
 词向量的语法规则测试集如下图Table1&lt;br /&gt;
 &lt;center&gt;&lt;img alt="" src="http://cl.ly/YIAi/cbow-exp_2_7.jpg" /&gt;&lt;/center&gt;&lt;/p&gt;
@@ -156,7 +156,7 @@ CBOW模型采取的是将一个随机大小的窗口中文本向量相加获得�
 这部分主要就是介绍词向量之间的空间规则，比如之前的实验测试了向量：&lt;br /&gt;
 &lt;div class="math"&gt;$$X_a \rightarrow X_b ≈ X_c \rightarrow X_d$$&lt;/div&gt;
 于是计算&lt;span class="math"&gt;\(y = X_b – X_a + X_c\)&lt;/span&gt;，并寻找离向量y最近的词，观察这个结果是否是&lt;span class="math"&gt;\(X_d\)&lt;/span&gt;，以及已知&lt;span class="math"&gt;\(X_d\)&lt;/span&gt;了，计算&lt;span class="math"&gt;\(cos(y,d)\)&lt;/span&gt;&lt;/p&gt;
-&lt;h4&gt;&lt;strong&gt;实验验证结果&lt;/strong&gt;&lt;/h4&gt;
+&lt;h3&gt;&lt;strong&gt;实验验证结果&lt;/strong&gt;&lt;/h3&gt;
 &lt;p&gt;作者使用上文RNNLM模型分别生成了80、320、640、1600维的词向量，其数据集是320M的Broadcase News，词表大小为82k，测试采用上文的测试方式，主要对比对象时LSA得到结果如图Table2&lt;br /&gt;
 &lt;center&gt;&lt;img alt="" src="http://cl.ly/YHxs/cbow-exp_2_8.jpg" /&gt;&lt;/center&gt;&lt;/p&gt;
 &lt;p&gt;可以发现以语法规则的精确性衡量，RNNLM模型词向量精确性上具有优势，而后作者还将RNNLM与其它已知的模型做对比，采用这些模型使用的测试集：6632个问句，36k的词表大小，37M大小的词量，结果如图Table3：&lt;br /&gt;
